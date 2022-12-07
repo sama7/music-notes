@@ -1,0 +1,52 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 20px;
+  text-align: center;
+}
+
+.btn-primary {
+  margin: 2em auto;
+}
+
+.form-select {
+  margin-left: auto;
+  margin-right: auto;
+  width: auto;
+  margin: 2em auto;
+}
+
+table {
+  text-align: left;
+}
+
+table .note {
+  background-color: rgb(189, 254, 254);
+  padding-top: 1em;
+  padding-bottom: 1em;
+}
+
+.artist {
+  font-size: 80%;
+}
+
+table .number {
+  width: 5%;
+}
+
+table .title, table .album {
+  width: 35%
+}
+
+table .add-edit-note, table .delete-note {
+  width: 12.5%
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
