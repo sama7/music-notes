@@ -18,7 +18,7 @@ export default function NotesList(props) {
                 return;
             }
     
-            const playlists = await response;
+            const playlists = await response.json();
             console.log(playlists);
         }
 
