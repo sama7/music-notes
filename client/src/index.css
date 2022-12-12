@@ -34,11 +34,15 @@ table .note {
   font-size: 80%;
 }
 
-table .number {
+table .number, table .thumbnail {
   width: 5%;
 }
 
-table .title, table .album {
+table .title {
+  width: 30%
+}
+
+table .album {
   width: 35%
 }
 
