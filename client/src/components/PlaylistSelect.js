@@ -1,15 +1,15 @@
 export default function PlaylistSelect(props) {
-    const playlistItems = props.userPlaylists?.map(playlist =>
+    const playlistItems = props.userPlaylists?.map((playlist, index) =>
         <option
-            key={playlist.id}
-            value={playlist.name}
+            key={index}
+            value={playlist.id}
         >
             {playlist.name}
         </option>
     );
     return (
-        <select className="form-select">
-            <option key="0">Select playlist</option>
+        <select className="form-select" onChange={props.handleChange}>
+            <option key="-1" value="">Select playlist</option>
             {playlistItems}
         </select>
     );
