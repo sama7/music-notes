@@ -125,7 +125,7 @@ router.route('/tracks').get(function (req, res, next) {
     const playlistID = req.query.playlistID;
     spotifyApi.getPlaylistTracks(playlistID)
         .then(data => {
-            console.log(data.body.items);
+            // console.log(data.body.items);
             res.json(data.body.items);
         })
         .catch(error => {
