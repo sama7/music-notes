@@ -17,46 +17,6 @@ export default function NotesList(props) {
     const code = new URLSearchParams(window.location.search).get('code');
     const state = new URLSearchParams(window.location.search).get('state');
 
-    function handleChange(e) {
-        setCurrentPlaylist(e.target.value);
-    }
-
-    function handleModalShow(trackSelected) {
-        setModalShowing(true);
-        setCurrentTrack(trackSelected);
-    }
-
-    function handleNoteChange(e) {
-        setNote(e.target.value);
-    }
-
-    async function handleNoteSubmit() {
-        const newNoteEntry = {
-            user: currentUser,
-            playlist: currentPlaylist,
-            track: currentTrack,
-            note: note,
-        };
-        console.log(newNoteEntry);
-        await fetch("http://localhost:5000/note/add", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(newNoteEntry),
-        })
-            .catch(error => {
-                window.alert(error);
-                return;
-            });
-        handleModalClose();
-    }
-
-    function handleModalClose() {
-        setModalShowing(false);
-        setNote('');
-    }
-
     useEffect(
         () => {
             async function fetchCurrentUser() {
@@ -151,6 +111,46 @@ export default function NotesList(props) {
         },
         [currentPlaylist],
     );
+
+    function handleChange(e) {
+        setCurrentPlaylist(e.target.value);
+    }
+
+    function handleModalShow(trackSelected) {
+        setModalShowing(true);
+        setCurrentTrack(trackSelected);
+    }
+
+    function handleNoteChange(e) {
+        setNote(e.target.value);
+    }
+
+    async function handleNoteSubmit() {
+        const newNoteEntry = {
+            user: currentUser,
+            playlist: currentPlaylist,
+            track: currentTrack,
+            note: note,
+        };
+        console.log(newNoteEntry);
+        await fetch("http://localhost:5000/note/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newNoteEntry),
+        })
+            .catch(error => {
+                window.alert(error);
+                return;
+            });
+        handleModalClose();
+    }
+
+    function handleModalClose() {
+        setModalShowing(false);
+        setNote('');
+    }
 
     const loggedInTemplate = (
         <div>
