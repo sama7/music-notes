@@ -1,4 +1,5 @@
 export default function SongCollectionRows(props) {
+
     const tracks = props.currentPlaylistTracks?.map((item, index) =>
         <tr key={index}>
             <th scope="row">{index + 1}</th>
@@ -21,6 +22,7 @@ export default function SongCollectionRows(props) {
                 {item.track.name}
                 <br />
                 <span className="artist">
+                    {item.track.explicit && "🅴 "}
                     {
                         item.track.artists.map((artist, index) => {
                             if (index !== item.track.artists.length - 1) {
@@ -32,8 +34,16 @@ export default function SongCollectionRows(props) {
                     }
                 </span>
             </td>
-            <td>{item.track.album.name}</td>
-            <td><button type="button" className="btn btn-outline-secondary">Add note</button></td>
+            <td className="align-middle">{item.track.album.name}</td>
+            <td className="align-middle">
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => props.handleModalShow(item.track.id)}
+                >
+                    Add Note
+                </button>
+            </td>
             <td></td>
         </tr>
     );

@@ -13,11 +13,16 @@ body {
   margin: 2em auto;
 }
 
+.form-group {
+  margin-top: 2em;
+}
+
 .form-select {
   margin-left: auto;
   margin-right: auto;
   width: auto;
-  margin: 2em auto;
+  margin-top: 0.5em;
+  margin-bottom: 2em;
 }
 
 table {
@@ -48,6 +53,19 @@ table .album {
 
 table .add-edit-note, table .delete-note {
   width: 12.5%
+}
+
+.form-label {
+  text-align: left;
+  width: 100%;
+}
+
+#cancelBtn {
+  margin-left: 65%;
+}
+
+#confirmBtn {
+  margin-right: 1em;
 }
 
 code {
