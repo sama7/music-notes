@@ -13,7 +13,10 @@ export default function SongCollectionTable(props) {
                     <th className="delete-note" scope="col"></th>
                 </tr>
             </thead>
-            <SongCollectionRows currentPlaylistTracks={props.currentPlaylistTracks} />
+            <SongCollectionRows
+                currentPlaylistTracks={props.currentPlaylistTracks}
+                handleModalShow={props.handleModalShow}
+            />
         </table>
     );
 }

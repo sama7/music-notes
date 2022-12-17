@@ -8,9 +8,12 @@ export default function PlaylistSelect(props) {
         </option>
     );
     return (
-        <select className="form-select" onChange={props.handleChange}>
-            <option key="-1" value="">Select playlist</option>
-            {playlists}
-        </select>
+        <div className="form-group">
+            <label htmlFor="playlist-select">Choose a playlist:</label>
+            <select id="playlist-select" className="form-select" onChange={props.handleChange}>
+                <option key="-1" value="">Select playlist</option>
+                {playlists}
+            </select>
+        </div>
     );
 }

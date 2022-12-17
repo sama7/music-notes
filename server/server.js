@@ -4,6 +4,7 @@ const cors = require('cors');
 require('dotenv').config({ path: './config.env' });
 const cookieParser = require('cookie-parser');
 const authorizeRouter = require('./routes/authorize');
+const noteRouter = require('./routes/note');
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
@@ -12,6 +13,7 @@ app.use(cookieParser());
 
 
 app.use('/', authorizeRouter);
+app.use('/note', noteRouter);
 // get driver connection
 const dbo = require('./db/conn');
 

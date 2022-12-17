@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import LogInButton from './LogInButton';
+import NotesModal from './NotesModal';
 import PlaylistSelect from './PlaylistSelect';
 import SongCollectionTable from './SongCollectionTable';
 
 export default function NotesList(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
+    const [currentUser, setCurrentUser] = useState('');
     const [userPlaylists, setUserPlaylists] = useState([]);
     const [currentPlaylist, setCurrentPlaylist] = useState('');
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
+    const [currentTrack, setCurrentTrack] = useState('');
+    const [isModalShowing, setModalShowing] = useState(false);
+    const [note, setNote] = useState('');
+
     const code = new URLSearchParams(window.location.search).get('code');
     const state = new URLSearchParams(window.location.search).get('state');
 
@@ -15,36 +21,105 @@ export default function NotesList(props) {
         setCurrentPlaylist(e.target.value);
     }
 
-    useEffect(() => {
-        async function fetchUserPlaylists() {
-            const response = await fetch('http://localhost:5000/callback?' + params.toString(), { credentials: 'include' });
+    function handleModalShow(trackSelected) {
+        setModalShowing(true);
+        setCurrentTrack(trackSelected);
+    }
 
-            if (!response.ok) {
-                const message = `An error occurred: ${response.statusText}`;
-                window.alert(message);
+    function handleNoteChange(e) {
+        setNote(e.target.value);
+    }
+
+    async function handleNoteSubmit() {
+        const newNoteEntry = {
+            user: currentUser,
+            playlist: currentPlaylist,
+            track: currentTrack,
+            note: note,
+        };
+        console.log(newNoteEntry);
+        await fetch("http://localhost:5000/note/add", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newNoteEntry),
+        })
+            .catch(error => {
+                window.alert(error);
                 return;
+            });
+        handleModalClose();
+    }
+
+    function handleModalClose() {
+        setModalShowing(false);
+        setNote('');
+    }
+
+    useEffect(
+        () => {
+            async function fetchCurrentUser() {
+                const response = await fetch('http://localhost:5000/callback?' + params.toString(), { credentials: 'include' });
+
+                if (!response.ok) {
+                    const message = `An error occurred: ${response.statusText}`;
+                    window.alert(message);
+                    return;
+                }
+                const currentUser = await response.json();
+                return currentUser;
             }
-            const playlists = await response.json();
-            return playlists;
-        }
 
-        const params = new URLSearchParams({
-            code: code,
-            state: state
-        });
+            const params = new URLSearchParams({
+                code: code,
+                state: state
+            });
 
-        if (code && state && !isLoggedIn) {
-            setLoggedIn(true);
-            fetchUserPlaylists()
-                .then((playlists) => {
-                    setUserPlaylists(playlists);
-                    console.log(playlists);
-                })
-                .catch((err) => {
-                    console.error('Something went wrong:', err);
-                });
-        }
-    }, [code, state, isLoggedIn]);
+            if (code && state && !isLoggedIn) {
+                setLoggedIn(true);
+                fetchCurrentUser()
+                    .then((fetchedUser) => {
+                        setCurrentUser(fetchedUser);
+                        console.log(fetchedUser);
+                    })
+                    .catch((err) => {
+                        console.error('Something went wrong in fetchCurrentUser:', err);
+                        return;
+                    });
+            }
+        },
+        [code, state, isLoggedIn],
+    );
+
+    useEffect(
+        () => {
+            async function fetchUserPlaylists() {
+                const response = await fetch('http://localhost:5000/playlists');
+
+                if (!response.ok) {
+                    const message = `An error occurred: ${response.statusText}`;
+                    window.alert(message);
+                    return;
+                }
+                const playlists = await response.json();
+                return playlists;
+            }
+
+            if (currentUser) {
+                fetchUserPlaylists()
+                    .then((playlists) => {
+                        setUserPlaylists(playlists);
+                        console.log(playlists);
+                    })
+                    .catch((err) => {
+                        console.error('Something went wrong:', err);
+                        return;
+                    });
+            }
+        },
+        [currentUser],
+    );
 
     useEffect(
         () => {
@@ -70,6 +145,7 @@ export default function NotesList(props) {
                     })
                     .catch((err) => {
                         console.error('Something went wrong:', err);
+                        return;
                     });
             }
         },
@@ -79,7 +155,19 @@ export default function NotesList(props) {
     const loggedInTemplate = (
         <div>
             <PlaylistSelect userPlaylists={userPlaylists} handleChange={handleChange} />
-            <SongCollectionTable currentPlaylistTracks={currentPlaylistTracks} />
+            {currentPlaylistTracks.length > 0 &&
+                <SongCollectionTable
+                    currentPlaylist={currentPlaylist}
+                    currentPlaylistTracks={currentPlaylistTracks}
+                    handleModalShow={handleModalShow}
+                />
+            }
+            <NotesModal
+                isModalShowing={isModalShowing}
+                handleModalClose={handleModalClose}
+                handleNoteChange={handleNoteChange}
+                handleNoteSubmit={handleNoteSubmit}
+            />
         </div>
     );
     const loggedOutTemplate = (
@@ -88,7 +176,7 @@ export default function NotesList(props) {
 
     return (
         <div>
-            {isLoggedIn ? loggedInTemplate : loggedOutTemplate}
+            {isLoggedIn && userPlaylists.length > 0 ? loggedInTemplate : loggedOutTemplate}
         </div>
     );
 }
