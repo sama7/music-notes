@@ -25,6 +25,11 @@ body {
   margin-bottom: 2em;
 }
 
+.playlist-cover {
+  max-height: 300px;
+  margin-bottom: 2em;
+}
+
 table {
   text-align: left;
 }
