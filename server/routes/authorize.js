@@ -52,7 +52,6 @@ router.route('/callback').get(function (req, res, next) {
 
     if (error) {
         console.error('Callback Error:', error);
-        res.send(`Callback Error: ${error}`);
         next(error);
     }
     if (state === null || state !== storedState) {
@@ -76,16 +75,22 @@ router.route('/callback').get(function (req, res, next) {
                 console.log('refresh_token:', refresh_token);
 
                 console.log(
-                    `Sucessfully retreived access token at ${DateTime.now().toLocaleString(DateTime.DATETIME_SHORT)}. Expires in ${expires_in} s.`
+                    `Sucessfully retrieved access token at ${DateTime.now().toLocaleString(DateTime.DATETIME_SHORT)}. Expires in ${expires_in} s.`
                 );
 
                 setInterval(async () => {
-                    const data = await spotifyApi.refreshAccessToken();
-                    const access_token = data.body['access_token'];
+                    try {
+                        const data = await spotifyApi.refreshAccessToken();
+                        const access_token = data.body['access_token'];
 
-                    console.log('The access token has been refreshed at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT));
-                    console.log('access_token:', access_token);
-                    spotifyApi.setAccessToken(access_token);
+                        console.log('The access token has been refreshed at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT));
+                        console.log('access_token:', access_token);
+                        spotifyApi.setAccessToken(access_token);
+                    }
+                    catch (error) {
+                        console.error(`Error: ${error}`);
+                        next(error);
+                    }
                 }, expires_in / 2 * 1000);
                 return spotifyApi.getMe();
             })
@@ -94,7 +99,6 @@ router.route('/callback').get(function (req, res, next) {
             })
             .catch(error => {
                 console.error('Error:', error);
-                res.send(`Error: ${error}`);
                 next(error);
             });
     }
@@ -107,7 +111,6 @@ router.route('/playlists').get(function (req, res, next) {
         })
         .catch(error => {
             console.error('Error:', error);
-            res.send(`Error: ${error}`);
             next(error);
         });
 });
@@ -120,7 +123,18 @@ router.route('/tracks').get(function (req, res, next) {
         })
         .catch(error => {
             console.error('Error:', error);
-            res.send(`Error: ${error}`);
+            next(error);
+        });
+});
+
+router.route('/cover').get(function (req, res, next) {
+    const playlistID = req.query.playlistID;
+    spotifyApi.getPlaylist(playlistID)
+        .then(data => {
+            res.json(data.body);
+        })
+        .catch(error => {
+            console.error('Error:', error);
             next(error);
         });
 });
