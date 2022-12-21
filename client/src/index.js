@@ -7,16 +7,10 @@ import App from './App';
 // import { BrowserRouter } from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
 
-const DATA = [
-  { name: 'My Playlist #1', id: 1 },
-  { name: 'My Playlist #2', id: 2 },
-  { name: 'My Playlist #3', id: 3 },
-];
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   // <React.StrictMode>
-    <App userPlaylists={DATA} />
+    <App />
   // </React.StrictMode>
 );
 
