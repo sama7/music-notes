@@ -7,7 +7,7 @@ function App(props) {
   return (
     <div className="body">
       <Header />
-      <NotesList userPlaylists={props.userPlaylists} />
+      <NotesList />
       {/* <Routes>
         <Route exact path="/" element={<NotesList userPlaylists={props.userPlaylists} />} />
       </Routes> */}

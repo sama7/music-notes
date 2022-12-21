@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import LogInButton from './LogInButton';
-import NotesModal from './NotesModal';
+import AddNoteModal from './AddNoteModal';
 import PlaylistCoverImage from './PlaylistCoverImage';
 import PlaylistSelect from './PlaylistSelect';
 import SongCollectionTable from './SongCollectionTable';
@@ -14,8 +14,8 @@ export default function NotesList(props) {
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
     const [notes, setNotes] = useState([]);
     const [currentTrack, setCurrentTrack] = useState('');
-    const [isModalShowing, setModalShowing] = useState(false);
-    const [note, setNote] = useState('');
+    const [isAddNoteModalShowing, setAddNoteModalShowing] = useState(false);
+    const [currentNote, setCurrentNote] = useState('');
     const [notesIncrement, setNotesIncrement] = useState(0);
 
     const code = new URLSearchParams(window.location.search).get('code');
@@ -184,26 +184,26 @@ export default function NotesList(props) {
         }
     }, [currentUser, currentPlaylist, notesIncrement]);
 
-    function handleChange(e) {
+    function handlePlaylistChange(e) {
         setCurrentPlaylist(e.target.value);
     }
 
-    function handleModalShow(trackSelected) {
-        setModalShowing(true);
+    function handleAddNoteModalShow(trackSelected) {
+        setAddNoteModalShowing(true);
         setCurrentTrack(trackSelected);
     }
 
     function handleNoteChange(e) {
-        setNote(e.target.value);
+        setCurrentNote(e.target.value);
     }
 
-    async function handleNoteSubmit() {
+    async function handleAddNoteSubmit() {
         try {
             const newNoteEntry = {
                 user: currentUser,
                 playlist: currentPlaylist,
                 track: currentTrack,
-                note: note,
+                note: currentNote,
             };
             console.log(newNoteEntry);
             await fetch("http://localhost:5000/note/add", {
@@ -213,7 +213,7 @@ export default function NotesList(props) {
                 },
                 body: JSON.stringify(newNoteEntry),
             });
-            handleModalClose();
+            handleAddNoteModalClose();
             setNotesIncrement(notesIncrement + 1);
         }
         catch (error) {
@@ -222,31 +222,31 @@ export default function NotesList(props) {
         }
     }
 
-    function handleModalClose() {
-        setModalShowing(false);
-        setNote('');
+    function handleAddNoteModalClose() {
+        setAddNoteModalShowing(false);
+        setCurrentNote('');
     }
 
     const loggedInTemplate = (
         <div>
-            <PlaylistSelect userPlaylists={userPlaylists} handleChange={handleChange} />
+            <PlaylistSelect userPlaylists={userPlaylists} handlePlaylistChange={handlePlaylistChange} />
             {currentPlaylistTracks.length > 0 && currentPlaylistCover && (
                 <>
                     <PlaylistCoverImage currentPlaylistCover={currentPlaylistCover} />
                     <SongCollectionTable
                         currentPlaylist={currentPlaylist}
                         currentPlaylistTracks={currentPlaylistTracks}
-                        handleModalShow={handleModalShow}
+                        handleAddNoteModalShow={handleAddNoteModalShow}
                         notes={notes}
                     />
                 </>
             )
             }
-            <NotesModal
-                isModalShowing={isModalShowing}
-                handleModalClose={handleModalClose}
+            <AddNoteModal
+                isAddNoteModalShowing={isAddNoteModalShowing}
+                handleAddNoteModalClose={handleAddNoteModalClose}
                 handleNoteChange={handleNoteChange}
-                handleNoteSubmit={handleNoteSubmit}
+                handleAddNoteSubmit={handleAddNoteSubmit}
             />
         </div>
     );

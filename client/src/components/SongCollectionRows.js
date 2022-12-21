@@ -2,8 +2,55 @@ import React from "react";
 
 export default function SongCollectionRows(props) {
 
+    function AddEditButtonCell(props) {
+        for (let i = 0; i < props.notes.length; i++) {
+            // if we find a note that corresponds to this track, render edit button
+            if (props.notes[i].track === props.item.track.id) {
+                return (
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                    // onClick={() => props.handleModalShow(props.item.track.id)}
+                    >
+                        Edit Note
+                    </button>
+                );
+            }
+        }
+        // if this track has no notes, render add button
+        return (
+            <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => props.handleModalShow(props.item.track.id)}
+            >
+                Add Note
+            </button>
+        );
+    }
+
+    function DeleteButtonCell(props) {
+        for (let i = 0; i < props.notes.length; i++) {
+            // if we find a note that corresponds to this track, render delete button
+            if (props.notes[i].track === props.item.track.id) {
+                return (
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary"
+                    // onClick={() => props.handleModalShow(props.item.track.id)}
+                    >
+                        Delete Note
+                    </button>
+                );
+            }
+        }
+        // if this track has no notes, render nothing
+        return;
+    }
+
     function NotesRow(props) {
         for (let i = 0; i < props.notes.length; i++) {
+            // if we find a note that corresponds to this track, render the note in a row below the track
             if (props.notes[i].track === props.item.track.id) {
                 return (
                     <tr>
@@ -53,17 +100,20 @@ export default function SongCollectionRows(props) {
                 </td>
                 <td className="align-middle">{item.track.album.name}</td>
                 <td className="align-middle">
-                    <button
+                    {/* <button
                         type="button"
                         className="btn btn-outline-secondary"
                         onClick={() => props.handleModalShow(item.track.id)}
                     >
                         Add Note
-                    </button>
+                    </button> */}
+                    <AddEditButtonCell notes={props.notes} item={item} handleModalShow={props.handleModalShow} />
                 </td>
-                <td></td>
+                <td className="align-middle">
+                    <DeleteButtonCell notes={props.notes} item={item} />
+                </td>
             </tr>
-            <NotesRow notes={props.notes} item={item} index={index} />
+            <NotesRow notes={props.notes} item={item} />
         </React.Fragment>
     );
     return (
