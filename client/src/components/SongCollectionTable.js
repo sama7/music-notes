@@ -15,7 +15,7 @@ export default function SongCollectionTable(props) {
             </thead>
             <SongCollectionRows
                 currentPlaylistTracks={props.currentPlaylistTracks}
-                handleModalShow={props.handleModalShow}
+                handleAddNoteModalShow={props.handleAddNoteModalShow}
                 notes={props.notes}
                 currentPlaylist={props.currentPlaylist}
             />
