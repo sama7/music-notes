@@ -15,7 +15,7 @@ export default function AddNoteModal(props) {
                         controlId="addNoteModal.ControlTextarea"
                     >
                         <Form.Label>Enter note text:</Form.Label>
-                        <Form.Control as="textarea" rows={3} autoFocus onChange={props.handleCurrentNoteChange} />
+                        <Form.Control as="textarea" rows={3} autoFocus onChange={props.handleNoteChange} />
                     </Form.Group>
                 </Form>
             </Modal.Body>
@@ -23,7 +23,7 @@ export default function AddNoteModal(props) {
                 <Button id="cancelBtn" variant="secondary" onClick={props.handleAddNoteModalClose}>
                     Cancel
                 </Button>
-                <Button id="confirmBtn" variant="primary" type="submit" onClick={props.handleNoteSubmit}>
+                <Button id="confirmBtn" variant="primary" type="submit" onClick={props.handleAddNoteSubmit}>
                     Save
                 </Button>
             </Modal.Footer>
