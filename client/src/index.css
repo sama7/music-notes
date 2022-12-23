@@ -44,7 +44,8 @@ table .note {
   font-size: 80%;
 }
 
-table .number, table .thumbnail {
+table .number,
+table .thumbnail {
   width: 5%;
 }
 
@@ -56,7 +57,8 @@ table .album {
   width: 35%
 }
 
-table .add-edit-note, table .delete-note {
+table .add-edit-note,
+table .delete-note {
   width: 12.5%
 }
 
@@ -69,7 +71,12 @@ table .add-edit-note, table .delete-note {
   margin-left: 65%;
 }
 
-#confirmBtn {
+#noBtn {
+  margin-left: 73.5%;
+}
+
+#confirmBtn,
+#yesBtn {
   margin-right: 1em;
 }
 

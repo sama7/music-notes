@@ -37,7 +37,10 @@ export default function SongCollectionRows(props) {
                     <button
                         type="button"
                         className="btn btn-outline-secondary"
-                    // onClick={() => props.handleModalShow(props.item.track.id)}
+                        onClick={() =>
+                            props.handleDeleteNoteModalShow(props.item.track.id,
+                                props.item.track.name, props.item.track.artists)
+                        }
                     >
                         Delete Note
                     </button>
@@ -110,7 +113,7 @@ export default function SongCollectionRows(props) {
                     <AddEditButtonCell notes={props.notes} item={item} handleAddNoteModalShow={props.handleAddNoteModalShow} />
                 </td>
                 <td className="align-middle">
-                    <DeleteButtonCell notes={props.notes} item={item} />
+                    <DeleteButtonCell notes={props.notes} item={item} handleDeleteNoteModalShow={props.handleDeleteNoteModalShow} />
                 </td>
             </tr>
             <NotesRow notes={props.notes} item={item} />

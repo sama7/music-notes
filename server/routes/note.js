@@ -36,4 +36,18 @@ router.route('/add').post(function (req, response) {
     });
 });
 
+router.route("/delete").delete((req, response) => {
+    const db_connect = dbo.getDb();
+    const myquery = {
+        user: req.query.user,
+        playlist: req.query.playlist,
+        track: req.query.track,
+    };
+    db_connect.collection("notes").deleteOne(myquery, function (err, obj) {
+        if (err) throw err;
+        console.log("1 document deleted");
+        response.json(obj);
+    });
+});
+
 module.exports = router;

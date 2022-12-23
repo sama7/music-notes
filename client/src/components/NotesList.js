@@ -4,6 +4,7 @@ import AddNoteModal from './AddNoteModal';
 import PlaylistCoverImage from './PlaylistCoverImage';
 import PlaylistSelect from './PlaylistSelect';
 import SongCollectionTable from './SongCollectionTable';
+import DeleteNoteModal from './DeleteNoteModal';
 
 export default function NotesList(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
@@ -14,9 +15,12 @@ export default function NotesList(props) {
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
     const [notes, setNotes] = useState([]);
     const [currentTrack, setCurrentTrack] = useState('');
+    const [currentTrackName, setCurrentTrackName] = useState('');
+    const [currentTrackArtistsNames, setCurrentTrackArtistsNames] = useState([]);
     const [isAddNoteModalShowing, setAddNoteModalShowing] = useState(false);
     const [currentNote, setCurrentNote] = useState('');
     const [notesIncrement, setNotesIncrement] = useState(0);
+    const [isDeleteNoteModalShowing, setDeleteNoteModalShowing] = useState(false);
 
     const code = new URLSearchParams(window.location.search).get('code');
     const state = new URLSearchParams(window.location.search).get('state');
@@ -205,7 +209,6 @@ export default function NotesList(props) {
                 track: currentTrack,
                 note: currentNote,
             };
-            console.log(newNoteEntry);
             await fetch("http://localhost:5000/note/add", {
                 method: "POST",
                 headers: {
@@ -227,6 +230,37 @@ export default function NotesList(props) {
         setCurrentNote('');
     }
 
+    function handleDeleteNoteModalShow(trackSelected, trackSelectedName, trackSelectedArtistsNames) {
+        setDeleteNoteModalShowing(true);
+        setCurrentTrack(trackSelected);
+        setCurrentTrackName(trackSelectedName);
+        setCurrentTrackArtistsNames(trackSelectedArtistsNames);
+    }
+
+    async function handleDeleteNoteSubmit() {
+        try {
+            // there should only be one note with this combination
+            const noteSearchCriteria = new URLSearchParams({
+                user: currentUser,
+                playlist: currentPlaylist,
+                track: currentTrack,
+            });
+            await fetch('http://localhost:5000/note/delete?' + noteSearchCriteria.toString(), {
+                method: 'DELETE',
+            });
+            handleDeleteNoteModalClose();
+            setNotesIncrement(notesIncrement - 1);
+        }
+        catch (error) {
+            console.error(`Error in handleDeleteNoteSubmit(): ${error}`);
+            return;
+        }
+    }
+
+    function handleDeleteNoteModalClose() {
+        setDeleteNoteModalShowing(false);
+    }
+
     const loggedInTemplate = (
         <div>
             <PlaylistSelect userPlaylists={userPlaylists} handlePlaylistChange={handlePlaylistChange} />
@@ -237,6 +271,7 @@ export default function NotesList(props) {
                         currentPlaylist={currentPlaylist}
                         currentPlaylistTracks={currentPlaylistTracks}
                         handleAddNoteModalShow={handleAddNoteModalShow}
+                        handleDeleteNoteModalShow={handleDeleteNoteModalShow}
                         notes={notes}
                     />
                 </>
@@ -247,6 +282,13 @@ export default function NotesList(props) {
                 handleAddNoteModalClose={handleAddNoteModalClose}
                 handleNoteChange={handleNoteChange}
                 handleAddNoteSubmit={handleAddNoteSubmit}
+            />
+            <DeleteNoteModal
+                isDeleteNoteModalShowing={isDeleteNoteModalShowing}
+                handleDeleteNoteModalClose={handleDeleteNoteModalClose}
+                handleDeleteNoteSubmit={handleDeleteNoteSubmit}
+                currentTrackName={currentTrackName}
+                currentTrackArtistsNames={currentTrackArtistsNames}
             />
         </div>
     );
