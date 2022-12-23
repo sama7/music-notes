@@ -1,5 +1,7 @@
 export default function PlaylistCoverImage(props) {
     function Image(props) {
+        // currentPlayistCover actually holds the entire playlist object (result of getPlaylist())
+        // helps to have the entire object so that we can reference the playlist name in the alt text
         if (props.currentPlaylistCover.images && props.currentPlaylistCover.images.length > 0) {
             return (
                 <img
