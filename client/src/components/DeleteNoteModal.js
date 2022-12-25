@@ -4,10 +4,10 @@ import Button from 'react-bootstrap/Button';
 export default function DeleteNoteModal(props) {
     return (
         <Modal show={props.isDeleteNoteModalShowing} onHide={props.handleDeleteNoteModalClose} centered>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-dark text-white" closeButton closeVariant="white">
                 <Modal.Title>Delete Note</Modal.Title>
             </Modal.Header>
-            <Modal.Body autoFocus>
+            <Modal.Body className="bg-dark text-white">
                 <p>
                     Are you sure you want to delete the note for <b>"{props.currentTrackName}"</b> by
                     <b> {props.currentTrackArtistsNames.map((artist, index) => {
@@ -21,7 +21,7 @@ export default function DeleteNoteModal(props) {
                     ?
                 </p>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="bg-dark text-white">
                 <Button id="noBtn" variant="secondary" autoFocus onClick={props.handleDeleteNoteModalClose}>
                     No
                 </Button>
