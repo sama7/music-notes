@@ -5,21 +5,21 @@ import Button from 'react-bootstrap/Button';
 export default function AddNoteModal(props) {
     return (
         <Modal show={props.isAddNoteModalShowing} onHide={props.handleAddNoteModalClose} centered>
-            <Modal.Header closeButton>
+            <Modal.Header className="bg-dark text-white" closeButton closeVariant="white">
                 <Modal.Title>Add Note</Modal.Title>
             </Modal.Header>
-            <Modal.Body>
+            <Modal.Body className="bg-dark text-white">
                 <Form>
                     <Form.Group
                         className="mb-3"
                         controlId="addNoteModal.ControlTextarea"
                     >
                         <Form.Label>Enter note text:</Form.Label>
-                        <Form.Control as="textarea" rows={3} autoFocus onChange={props.handleNoteChange} />
+                        <Form.Control className="bg-dark text-white" as="textarea" rows={3} autoFocus onChange={props.handleNoteChange} />
                     </Form.Group>
                 </Form>
             </Modal.Body>
-            <Modal.Footer>
+            <Modal.Footer className="bg-dark text-white">
                 <Button id="cancelBtn" variant="secondary" onClick={props.handleAddNoteModalClose}>
                     Cancel
                 </Button>

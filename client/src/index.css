@@ -7,9 +7,11 @@ body {
   -moz-osx-font-smoothing: grayscale;
   padding: 20px;
   text-align: center;
+  background-color: rgb(25, 25, 25);
+  color: white;
 }
 
-.btn-primary {
+.loginBtn {
   margin: 2em auto;
 }
 
@@ -28,6 +30,7 @@ body {
 .playlist-cover {
   max-height: 300px;
   margin-bottom: 2em;
+  box-shadow: 0 4px 8px 0 rgba(255, 255, 255, 0.2), 0 6px 20px 0 rgba(255, 255, 255, 0.19);
 }
 
 table {
@@ -35,7 +38,8 @@ table {
 }
 
 table .note {
-  background-color: rgb(189, 254, 254);
+  /* background-color: rgb(48, 104, 68); */
+  background-color: #453C67;
   padding-top: 1em;
   padding-bottom: 1em;
 }
@@ -68,16 +72,11 @@ table .delete-note {
 }
 
 #cancelBtn {
-  margin-left: 65%;
+  margin-right: 2%;
 }
 
 #noBtn {
-  margin-left: 73.5%;
-}
-
-#confirmBtn,
-#yesBtn {
-  margin-right: 1em;
+  margin-right: 2%;
 }
 
 code {

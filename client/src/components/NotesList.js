@@ -1,10 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LogInButton from './LogInButton';
 import AddNoteModal from './AddNoteModal';
 import PlaylistCoverImage from './PlaylistCoverImage';
 import PlaylistSelect from './PlaylistSelect';
 import SongCollectionTable from './SongCollectionTable';
+import EditNoteModal from './EditNoteModal';
 import DeleteNoteModal from './DeleteNoteModal';
+
+export function usePrevious(value) {
+    const ref = useRef();
+    useEffect(() => {
+        ref.current = value;
+    });
+    return ref.current;
+}
 
 export default function NotesList(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
@@ -18,9 +27,14 @@ export default function NotesList(props) {
     const [currentTrackName, setCurrentTrackName] = useState('');
     const [currentTrackArtistsNames, setCurrentTrackArtistsNames] = useState([]);
     const [isAddNoteModalShowing, setAddNoteModalShowing] = useState(false);
+    const [isEditNoteModalShowing, setEditNoteModalShowing] = useState(false);
+    const [isDeleteNoteModalShowing, setDeleteNoteModalShowing] = useState(false);
     const [currentNote, setCurrentNote] = useState('');
     const [notesIncrement, setNotesIncrement] = useState(0);
-    const [isDeleteNoteModalShowing, setDeleteNoteModalShowing] = useState(false);
+
+    const textareaRef = useRef(null);
+
+    const wasEditNoteModalShowing = usePrevious(isEditNoteModalShowing);
 
     const code = new URLSearchParams(window.location.search).get('code');
     const state = new URLSearchParams(window.location.search).get('state');
@@ -188,6 +202,18 @@ export default function NotesList(props) {
         }
     }, [currentUser, currentPlaylist, notesIncrement]);
 
+    useEffect(() => {
+        if (!wasEditNoteModalShowing && isEditNoteModalShowing) {
+            if (textareaRef.current) {
+                const len = textareaRef.current.value.length;
+                textareaRef.current.setSelectionRange(len, len);
+            } else {
+                console.error('textareaRef is null')
+                return;
+            }
+        }
+    }, [wasEditNoteModalShowing, isEditNoteModalShowing]);
+
     function handlePlaylistChange(e) {
         setCurrentPlaylist(e.target.value);
     }
@@ -209,10 +235,10 @@ export default function NotesList(props) {
                 track: currentTrack,
                 note: currentNote,
             };
-            await fetch("http://localhost:5000/note/add", {
-                method: "POST",
+            await fetch('http://localhost:5000/note/add', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(newNoteEntry),
             });
@@ -220,13 +246,51 @@ export default function NotesList(props) {
             setNotesIncrement(notesIncrement + 1);
         }
         catch (error) {
-            console.error(`Error in handleNoteSubmit(): ${error}`);
+            console.error(`Error in handleAddNoteSubmit(): ${error}`);
             return;
         }
     }
 
     function handleAddNoteModalClose() {
         setAddNoteModalShowing(false);
+        setCurrentNote('');
+    }
+
+    function handleEditNoteModalShow(trackSelected, trackSelectedNote) {
+        setEditNoteModalShowing(true);
+        setCurrentTrack(trackSelected);
+        setCurrentNote(trackSelectedNote);
+    }
+
+    async function handleEditNoteSubmit() {
+        try {
+            // there should only be one note with this combination
+            const noteSearchCriteria = new URLSearchParams({
+                user: currentUser,
+                playlist: currentPlaylist,
+                track: currentTrack,
+            });
+            const editedNote = {
+                note: currentNote,
+            };
+            await fetch('http://localhost:5000/note/update?' + noteSearchCriteria.toString(), {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(editedNote),
+            });
+            handleEditNoteModalClose();
+            setNotesIncrement(notesIncrement + 1);
+        }
+        catch (error) {
+            console.error(`Error in handleEditNoteSubmit(): ${error}`);
+            return;
+        }
+    }
+
+    function handleEditNoteModalClose() {
+        setEditNoteModalShowing(false);
         setCurrentNote('');
     }
 
@@ -271,6 +335,7 @@ export default function NotesList(props) {
                         currentPlaylist={currentPlaylist}
                         currentPlaylistTracks={currentPlaylistTracks}
                         handleAddNoteModalShow={handleAddNoteModalShow}
+                        handleEditNoteModalShow={handleEditNoteModalShow}
                         handleDeleteNoteModalShow={handleDeleteNoteModalShow}
                         notes={notes}
                     />
@@ -282,6 +347,14 @@ export default function NotesList(props) {
                 handleAddNoteModalClose={handleAddNoteModalClose}
                 handleNoteChange={handleNoteChange}
                 handleAddNoteSubmit={handleAddNoteSubmit}
+            />
+            <EditNoteModal
+                isEditNoteModalShowing={isEditNoteModalShowing}
+                handleEditNoteModalClose={handleEditNoteModalClose}
+                handleNoteChange={handleNoteChange}
+                handleEditNoteSubmit={handleEditNoteSubmit}
+                currentNote={currentNote}
+                ref={textareaRef}
             />
             <DeleteNoteModal
                 isDeleteNoteModalShowing={isDeleteNoteModalShowing}
