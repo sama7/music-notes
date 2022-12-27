@@ -105,9 +105,12 @@ router.route('/callback').get(function (req, res, next) {
 });
 
 router.route('/playlists').get(function (req, res, next) {
-    spotifyApi.getUserPlaylists()
+    spotifyApi.getUserPlaylists({
+        limit: req.query.limit,
+        offset: req.query.offset,
+    })
         .then(data => {
-            res.json(data.body.items);
+            res.json(data.body);
         })
         .catch(error => {
             console.error('Error:', error);

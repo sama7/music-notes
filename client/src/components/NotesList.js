@@ -19,6 +19,9 @@ export default function NotesList(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState('');
     const [userPlaylists, setUserPlaylists] = useState([]);
+    const [nextUserPlaylists, setNextUserPlaylists] = useState('');
+    const limit = 50;
+    const [currentOffset, setCurrentOffset] = useState(0);
     const [currentPlaylist, setCurrentPlaylist] = useState('');
     const [currentPlaylistCover, setCurrentPlaylistCover] = useState({});
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
@@ -79,7 +82,7 @@ export default function NotesList(props) {
     useEffect(() => {
         async function fetchUserPlaylists() {
             try {
-                const response = await fetch('http://localhost:5000/playlists');
+                const response = await fetch('http://localhost:5000/playlists?' + params.toString());
                 if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -94,10 +97,19 @@ export default function NotesList(props) {
             }
         }
 
+        const params = new URLSearchParams({
+            limit: limit,
+            offset: currentOffset,
+        });
+
         if (currentUser) {
             fetchUserPlaylists()
                 .then((playlists) => {
-                    setUserPlaylists(playlists);
+                    setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
+                    // const newArray = userPlaylists.push(playlists.items);
+                    // setUserPlaylists(newArray);
+                    // setUserPlaylists(playlists.items);
+                    setNextUserPlaylists(playlists.next);
                     console.log(playlists);
                 })
                 .catch((error) => {
@@ -105,7 +117,7 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [currentUser]);
+    }, [currentUser, currentOffset]);
 
     useEffect(() => {
         async function fetchPlaylistTracks() {
@@ -214,8 +226,14 @@ export default function NotesList(props) {
         }
     }, [wasEditNoteModalShowing, isEditNoteModalShowing]);
 
-    function handlePlaylistChange(e) {
-        setCurrentPlaylist(e.target.value);
+    function handlePlaylistSelectScroll() {
+        if (nextUserPlaylists) {
+            setCurrentOffset(currentOffset + limit);
+        }
+    }
+
+    function handlePlaylistChange(option) {
+        setCurrentPlaylist(option.value);
     }
 
     function handleAddNoteModalShow(trackSelected) {
@@ -327,7 +345,11 @@ export default function NotesList(props) {
 
     const loggedInTemplate = (
         <div>
-            <PlaylistSelect userPlaylists={userPlaylists} handlePlaylistChange={handlePlaylistChange} />
+            <PlaylistSelect
+                userPlaylists={userPlaylists}
+                handlePlaylistSelectScroll={handlePlaylistSelectScroll}
+                handlePlaylistChange={handlePlaylistChange}
+            />
             {currentPlaylistTracks.length > 0 && currentPlaylistCover && (
                 <>
                     <PlaylistCoverImage currentPlaylistCover={currentPlaylistCover} />
