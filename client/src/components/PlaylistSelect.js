@@ -1,19 +1,38 @@
+import Select from 'react-select';
+
 export default function PlaylistSelect(props) {
-    const playlists = props.userPlaylists?.map((playlist, index) =>
-        <option
-            key={index}
-            value={playlist.id}
-        >
-            {playlist.name}
-        </option>
-    );
+    const playlists = props.userPlaylists.map((playlist) => ({
+        value: playlist.id,
+        label: playlist.name,
+    }));
+    console.log(playlists);
     return (
         <div className="form-group">
             <label htmlFor="playlist-select">Choose a playlist:</label>
-            <select id="playlist-select" className="form-select bg-dark text-white" onChange={props.handlePlaylistChange}>
-                <option key="-1" value="">Select playlist</option>
-                {playlists}
-            </select>
+            <Select
+                id="playlist-select"
+                onChange={props.handlePlaylistChange}
+                options={playlists}
+                theme={(theme) => ({
+                    ...theme,
+                    borderRadius: 0,
+                    colors: {
+                        ...theme.colors,
+                        neutral0: 'rgb(33, 37, 41)',
+                        primary25: 'rgb(99, 100, 101)',
+                        neutral80: 'rgb(255, 255, 255)',
+                    },
+                })}
+                styles={{
+                    container: (base) => ({
+                        ...base,
+                        minWidth: "40%",
+                        maxWidth: "max-content",
+                        textAlign: 'left',
+                    }),
+                }}
+                onMenuScrollToBottom={props.handlePlaylistSelectScroll}
+            />
         </div>
     );
 }
