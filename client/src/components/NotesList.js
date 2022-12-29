@@ -18,24 +18,32 @@ export function usePrevious(value) {
 export default function NotesList(props) {
     const [isLoggedIn, setLoggedIn] = useState(false);
     const [currentUser, setCurrentUser] = useState('');
+
     const [userPlaylists, setUserPlaylists] = useState([]);
+    const loadPlaylistsLimit = 50;
+    const [currentPlaylistsOffset, setCurrentPlaylistsOffset] = useState(0);
     const [nextUserPlaylists, setNextUserPlaylists] = useState('');
-    const limit = 50;
-    const [currentOffset, setCurrentOffset] = useState(0);
     const [currentPlaylist, setCurrentPlaylist] = useState('');
     const [currentPlaylistCover, setCurrentPlaylistCover] = useState({});
+
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
-    const [notes, setNotes] = useState([]);
+    const loadTracksLimit = 100;
+    const [currentTracksOffset, setCurrentTracksOffset] = useState(0);
+    const [nextPlaylistTracks, setNextPlaylistTracks] = useState('');
     const [currentTrack, setCurrentTrack] = useState('');
     const [currentTrackName, setCurrentTrackName] = useState('');
     const [currentTrackArtistsNames, setCurrentTrackArtistsNames] = useState([]);
+
     const [isAddNoteModalShowing, setAddNoteModalShowing] = useState(false);
     const [isEditNoteModalShowing, setEditNoteModalShowing] = useState(false);
     const [isDeleteNoteModalShowing, setDeleteNoteModalShowing] = useState(false);
+
+    const [notes, setNotes] = useState([]);
     const [currentNote, setCurrentNote] = useState('');
     const [notesIncrement, setNotesIncrement] = useState(0);
 
     const textareaRef = useRef(null);
+    const tableRef = useRef(null);
 
     const wasEditNoteModalShowing = usePrevious(isEditNoteModalShowing);
 
@@ -45,7 +53,8 @@ export default function NotesList(props) {
     useEffect(() => {
         async function fetchCurrentUser() {
             try {
-                const response = await fetch('http://localhost:5000/callback?' + params.toString(), { credentials: 'include' });
+                const response = await fetch('http://localhost:5000/callback?' + params.toString(),
+                    { credentials: 'include' });
                 if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -98,17 +107,14 @@ export default function NotesList(props) {
         }
 
         const params = new URLSearchParams({
-            limit: limit,
-            offset: currentOffset,
+            limit: loadPlaylistsLimit,
+            offset: currentPlaylistsOffset,
         });
 
         if (currentUser) {
             fetchUserPlaylists()
                 .then((playlists) => {
                     setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
-                    // const newArray = userPlaylists.push(playlists.items);
-                    // setUserPlaylists(newArray);
-                    // setUserPlaylists(playlists.items);
                     setNextUserPlaylists(playlists.next);
                     console.log(playlists);
                 })
@@ -117,26 +123,9 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [currentUser, currentOffset]);
+    }, [currentUser, currentPlaylistsOffset]);
 
     useEffect(() => {
-        async function fetchPlaylistTracks() {
-            try {
-                const response = await fetch('http://localhost:5000/tracks?' + params.toString());
-                if (!response.ok) {
-                    const message = `An error occurred: ${response.statusText}`;
-                    window.alert(message);
-                    return;
-                }
-                const playlistTracks = await response.json();
-                return playlistTracks;
-            }
-            catch (error) {
-                console.error(`Error in fetchPlaylistTracks(): ${error}`);
-                return;
-            }
-        }
-
         async function fetchPlaylistCover() {
             try {
                 const response = await fetch('http://localhost:5000/cover?' + params.toString());
@@ -157,15 +146,6 @@ export default function NotesList(props) {
         const params = new URLSearchParams({ playlistID: currentPlaylist });
 
         if (currentPlaylist) {
-            fetchPlaylistTracks()
-                .then((playlistTracks) => {
-                    setCurrentPlaylistTracks(playlistTracks);
-                    console.log(playlistTracks);
-                })
-                .catch((error) => {
-                    console.error(`Error while calling fetchPlaylistTracks(): ${error}`);
-                    return;
-                });
             fetchPlaylistCover()
                 .then((playlistCover) => {
                     setCurrentPlaylistCover(playlistCover);
@@ -177,6 +157,45 @@ export default function NotesList(props) {
                 });
         }
     }, [currentPlaylist]);
+
+    useEffect(() => {
+        async function fetchPlaylistTracks() {
+            try {
+                const response = await fetch('http://localhost:5000/tracks?' + params.toString());
+                if (!response.ok) {
+                    const message = `An error occurred: ${response.statusText}`;
+                    window.alert(message);
+                    return;
+                }
+                const playlistTracks = await response.json();
+                return playlistTracks;
+            }
+            catch (error) {
+                console.error(`Error in fetchPlaylistTracks(): ${error}`);
+                return;
+            }
+        }
+
+        const params = new URLSearchParams({
+            playlistID: currentPlaylist,
+            limit: loadTracksLimit,
+            offset: currentTracksOffset,
+        });
+
+        if (currentPlaylist) {
+            fetchPlaylistTracks()
+                .then((playlistTracks) => {
+                    setCurrentPlaylistTracks(currentPlaylistTracks => (
+                        [...currentPlaylistTracks, ...playlistTracks.items]));
+                    setNextPlaylistTracks(playlistTracks.next);
+                    console.log(playlistTracks);
+                })
+                .catch((error) => {
+                    console.error(`Error while calling fetchPlaylistTracks(): ${error}`);
+                    return;
+                });
+        }
+    }, [currentPlaylist, currentTracksOffset]);
 
     useEffect(() => {
         async function fetchNotes() {
@@ -228,13 +247,37 @@ export default function NotesList(props) {
 
     function handlePlaylistSelectScroll() {
         if (nextUserPlaylists) {
-            setCurrentOffset(currentOffset + limit);
+            setCurrentPlaylistsOffset(currentPlaylistsOffset + loadPlaylistsLimit);
         }
     }
 
     function handlePlaylistChange(option) {
+        setCurrentPlaylistTracks([]);
         setCurrentPlaylist(option.value);
+        setCurrentTracksOffset(0);
+        setNextPlaylistTracks('');
     }
+
+    useEffect(() => {
+        function isBottom(obj) {
+            if (obj) {
+                return obj.getBoundingClientRect().bottom <= window.innerHeight;
+            } else {
+                return null;
+            }
+        }
+
+        function handleTracksScroll() {
+            const wrappedElement = tableRef.current;
+            if (isBottom(wrappedElement) && nextPlaylistTracks) {
+                setCurrentTracksOffset(currentTracksOffset => currentTracksOffset + loadTracksLimit);
+            }
+        }
+        window.addEventListener("scroll", handleTracksScroll, { passive: true });
+        return () => {
+            window.removeEventListener("scroll", handleTracksScroll);
+        };
+    }, [nextPlaylistTracks]);
 
     function handleAddNoteModalShow(trackSelected) {
         setAddNoteModalShowing(true);
@@ -360,6 +403,7 @@ export default function NotesList(props) {
                         handleEditNoteModalShow={handleEditNoteModalShow}
                         handleDeleteNoteModalShow={handleDeleteNoteModalShow}
                         notes={notes}
+                        ref={tableRef}
                     />
                 </>
             )

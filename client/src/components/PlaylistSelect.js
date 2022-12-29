@@ -5,7 +5,6 @@ export default function PlaylistSelect(props) {
         value: playlist.id,
         label: playlist.name,
     }));
-    console.log(playlists);
     return (
         <div className="form-group">
             <label htmlFor="playlist-select">Choose a playlist:</label>
@@ -26,7 +25,7 @@ export default function PlaylistSelect(props) {
                 styles={{
                     container: (base) => ({
                         ...base,
-                        minWidth: "40%",
+                        minWidth: "320px",
                         maxWidth: "max-content",
                         textAlign: 'left',
                     }),

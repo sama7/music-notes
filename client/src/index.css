@@ -37,6 +37,7 @@ body {
 
 table {
   text-align: left;
+  overflow: scroll;
 }
 
 table .note {
