@@ -1,8 +1,9 @@
+import { forwardRef } from 'react';
 import SongCollectionRows from './SongCollectionRows';
 
-export default function SongCollectionTable(props) {
+const SongCollectionTable = forwardRef(function SongCollectionTable(props, ref) {
     return (
-        <table className="table table-dark table-hover">
+        <table className="table table-dark table-hover" ref={ref}>
             <thead>
                 <tr>
                     <th className="number text-center" scope="col">#</th>
@@ -22,4 +23,6 @@ export default function SongCollectionTable(props) {
             />
         </table>
     );
-}
+});
+
+export default SongCollectionTable;

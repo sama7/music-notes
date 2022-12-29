@@ -120,9 +120,12 @@ router.route('/playlists').get(function (req, res, next) {
 
 router.route('/tracks').get(function (req, res, next) {
     const playlistID = req.query.playlistID;
-    spotifyApi.getPlaylistTracks(playlistID)
+    spotifyApi.getPlaylistTracks(playlistID, {
+        limit: req.query.limit,
+        offset: req.query.offset,
+    })
         .then(data => {
-            res.json(data.body.items);
+            res.json(data.body);
         })
         .catch(error => {
             console.error('Error:', error);
