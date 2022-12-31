@@ -51,7 +51,7 @@ export default function NotesList(props) {
     const state = new URLSearchParams(window.location.search).get('state');
 
     useEffect(() => {
-        async function fetchCurrentUser() {
+        async function fetchCurrentUser(params) {
             try {
                 const response = await fetch('http://localhost:5000/callback?' + params.toString(),
                     { credentials: 'include' });
@@ -76,7 +76,7 @@ export default function NotesList(props) {
 
         if (code && state && !isLoggedIn) {
             setLoggedIn(true);
-            fetchCurrentUser()
+            fetchCurrentUser(params)
                 .then((fetchedUser) => {
                     setCurrentUser(fetchedUser);
                     console.log(fetchedUser);
@@ -89,7 +89,7 @@ export default function NotesList(props) {
     }, [code, state, isLoggedIn]);
 
     useEffect(() => {
-        async function fetchUserPlaylists() {
+        async function fetchUserPlaylists(params) {
             try {
                 const response = await fetch('http://localhost:5000/playlists?' + params.toString());
                 if (!response.ok) {
@@ -112,7 +112,7 @@ export default function NotesList(props) {
         });
 
         if (currentUser) {
-            fetchUserPlaylists()
+            fetchUserPlaylists(params)
                 .then((playlists) => {
                     setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
                     setNextUserPlaylists(playlists.next);
@@ -126,7 +126,7 @@ export default function NotesList(props) {
     }, [currentUser, currentPlaylistsOffset]);
 
     useEffect(() => {
-        async function fetchPlaylistCover() {
+        async function fetchPlaylistCover(params) {
             try {
                 const response = await fetch('http://localhost:5000/cover?' + params.toString());
                 if (!response.ok) {
@@ -146,7 +146,7 @@ export default function NotesList(props) {
         const params = new URLSearchParams({ playlistID: currentPlaylist });
 
         if (currentPlaylist) {
-            fetchPlaylistCover()
+            fetchPlaylistCover(params)
                 .then((playlistCover) => {
                     setCurrentPlaylistCover(playlistCover);
                     console.log(playlistCover);
@@ -159,7 +159,7 @@ export default function NotesList(props) {
     }, [currentPlaylist]);
 
     useEffect(() => {
-        async function fetchPlaylistTracks() {
+        async function fetchPlaylistTracks(params) {
             try {
                 const response = await fetch('http://localhost:5000/tracks?' + params.toString());
                 if (!response.ok) {
@@ -183,7 +183,7 @@ export default function NotesList(props) {
         });
 
         if (currentPlaylist) {
-            fetchPlaylistTracks()
+            fetchPlaylistTracks(params)
                 .then((playlistTracks) => {
                     setCurrentPlaylistTracks(currentPlaylistTracks => (
                         [...currentPlaylistTracks, ...playlistTracks.items]));
@@ -198,7 +198,7 @@ export default function NotesList(props) {
     }, [currentPlaylist, currentTracksOffset]);
 
     useEffect(() => {
-        async function fetchNotes() {
+        async function fetchNotes(params) {
             try {
                 const response = await fetch('http://localhost:5000/note/?' + params.toString());
                 if (!response.ok) {
@@ -221,7 +221,7 @@ export default function NotesList(props) {
         });
 
         if (currentPlaylist) {
-            fetchNotes()
+            fetchNotes(params)
                 .then((notes) => {
                     setNotes(notes);
                     console.log(notes);

@@ -45,6 +45,7 @@ table .note {
   background-color: #453C67;
   padding-top: 1em;
   padding-bottom: 1em;
+  white-space: pre-wrap;
 }
 
 .artist {

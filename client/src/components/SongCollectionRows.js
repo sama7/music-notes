@@ -1,17 +1,18 @@
 import React from "react";
+import coverMissing from './cover-missing.png'
 
 export default function SongCollectionRows(props) {
 
     function AddEditButtonCell(props) {
         for (let i = 0; i < props.notes.length; i++) {
             // if we find a note that corresponds to this track, render edit button
-            if (props.notes[i].track === props.item.track.id) {
+            if (props.notes[i].track === props.item.track.uri) {
                 return (
                     <button
                         type="button"
                         className="btn btn-outline-light"
-                        onClick={() => 
-                            props.handleEditNoteModalShow(props.item.track.id,
+                        onClick={() =>
+                            props.handleEditNoteModalShow(props.item.track.uri,
                                 props.notes[i].note)
                         }
                     >
@@ -25,7 +26,7 @@ export default function SongCollectionRows(props) {
             <button
                 type="button"
                 className="btn btn-outline-light"
-                onClick={() => props.handleAddNoteModalShow(props.item.track.id)}
+                onClick={() => props.handleAddNoteModalShow(props.item.track.uri)}
             >
                 Add Note
             </button>
@@ -35,13 +36,13 @@ export default function SongCollectionRows(props) {
     function DeleteButtonCell(props) {
         for (let i = 0; i < props.notes.length; i++) {
             // if we find a note that corresponds to this track, render delete button
-            if (props.notes[i].track === props.item.track.id) {
+            if (props.notes[i].track === props.item.track.uri) {
                 return (
                     <button
                         type="button"
                         className="btn btn-outline-light"
                         onClick={() =>
-                            props.handleDeleteNoteModalShow(props.item.track.id,
+                            props.handleDeleteNoteModalShow(props.item.track.uri,
                                 props.item.track.name, props.item.track.artists)
                         }
                     >
@@ -57,7 +58,7 @@ export default function SongCollectionRows(props) {
     function NotesRow(props) {
         for (let i = 0; i < props.notes.length; i++) {
             // if we find a note that corresponds to this track, render the note in a row below the track
-            if (props.notes[i].track === props.item.track.id) {
+            if (props.notes[i].track === props.item.track.uri) {
                 return (
                     <tr>
                         <th scope="row"></th>
@@ -69,61 +70,77 @@ export default function SongCollectionRows(props) {
         return;
     }
 
-    const tracks = props.currentPlaylistTracks?.map((item, index) =>
-        <React.Fragment key={`${index}-${item.track.name}`}>
-            <tr key={index}>
-                <th className="align-middle text-center" scope="row">{index + 1}</th>
-                <td className="align-middle">
-                    <img
-                        src={item.track.album.images[2].url}
-                        alt={"Album cover for " + item.track.album.name + " by " +
-                            item.track.artists.map((artist, index) => {
-                                if (index === 0) {
-                                    return artist.name;
-                                } else {
-                                    return " " + artist.name;
+    const tracks = props.currentPlaylistTracks?.map((item, index) => {
+        if (item.track) {
+            return (
+                <React.Fragment key={`${index}-${item.track.name}`}>
+                    <tr key={index}>
+                        <th className="align-middle text-center" scope="row">{index + 1}</th>
+                        <td className="align-middle">
+                            {item.track.album.images.length > 0
+                                ?
+                                <img
+                                    src={item.track.album.images[2].url}
+                                    alt={"Album cover for " + item.track.album.name + " by " +
+                                        item.track.artists.map((artist, index) => {
+                                            if (index === 0) {
+                                                return artist.name;
+                                            } else {
+                                                return " " + artist.name;
+                                            }
+                                        })}
+                                    width="50"
+                                    height="50"
+                                />
+                                :
+                                <img
+                                    src={coverMissing}
+                                    alt="Album cover missing for this track"
+                                    width="50"
+                                    height="50"
+                                />
+                            }
+                        </td>
+                        <td>
+                            {item.track.name}
+                            <br />
+                            <span className="artist">
+                                {item.track.explicit && "🅴 "}
+                                {
+                                    item.track.artists.map((artist, index) => {
+                                        if (index !== item.track.artists.length - 1) {
+                                            return <span key={index}>{artist.name}, </span>;
+                                        } else {
+                                            return <span key={index}>{artist.name}</span>;
+                                        }
+                                    })
                                 }
-                            })}
-                        width="50"
-                        height="50"
-                    />
-                </td>
-                <td>
-                    {item.track.name}
-                    <br />
-                    <span className="artist">
-                        {item.track.explicit && "🅴 "}
-                        {
-                            item.track.artists.map((artist, index) => {
-                                if (index !== item.track.artists.length - 1) {
-                                    return <span key={index}>{artist.name}, </span>;
-                                } else {
-                                    return <span key={index}>{artist.name}</span>;
-                                }
-                            })
-                        }
-                    </span>
-                </td>
-                <td className="align-middle">{item.track.album.name}</td>
-                <td className="align-middle">
-                    <AddEditButtonCell
-                        notes={props.notes}
-                        item={item}
-                        handleAddNoteModalShow={props.handleAddNoteModalShow}
-                        handleEditNoteModalShow={props.handleEditNoteModalShow}
-                    />
-                </td>
-                <td className="align-middle">
-                    <DeleteButtonCell
-                        notes={props.notes}
-                        item={item}
-                        handleDeleteNoteModalShow={props.handleDeleteNoteModalShow}
-                    />
-                </td>
-            </tr>
-            <NotesRow notes={props.notes} item={item} />
-        </React.Fragment>
-    );
+                            </span>
+                        </td>
+                        <td className="align-middle">{item.track.album.name}</td>
+                        <td className="align-middle">
+                            <AddEditButtonCell
+                                notes={props.notes}
+                                item={item}
+                                handleAddNoteModalShow={props.handleAddNoteModalShow}
+                                handleEditNoteModalShow={props.handleEditNoteModalShow}
+                            />
+                        </td>
+                        <td className="align-middle">
+                            <DeleteButtonCell
+                                notes={props.notes}
+                                item={item}
+                                handleDeleteNoteModalShow={props.handleDeleteNoteModalShow}
+                            />
+                        </td>
+                    </tr>
+                    <NotesRow notes={props.notes} item={item} />
+                </React.Fragment>
+            )
+        } else {
+            return '';
+        }
+    });
     return (
         <tbody>
             {tracks}
