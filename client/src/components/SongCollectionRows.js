@@ -1,5 +1,5 @@
 import React from "react";
-import coverMissing from './cover-missing.png'
+import trackCoverMissing from './track-cover-missing.png'
 
 export default function SongCollectionRows(props) {
 
@@ -88,14 +88,24 @@ export default function SongCollectionRows(props) {
                                             } else {
                                                 return " " + artist.name;
                                             }
-                                        })}
+                                        })
+                                    }
                                     width="50"
                                     height="50"
                                 />
                                 :
                                 <img
-                                    src={coverMissing}
-                                    alt="Album cover missing for this track"
+                                    src={trackCoverMissing}
+                                    alt={"Album cover for " + item.track.album.name + " by " +
+                                        item.track.artists.map((artist, index) => {
+                                            if (index === 0) {
+                                                return artist.name;
+                                            } else {
+                                                return " " + artist.name;
+                                            }
+                                        })
+                                        + " (placeholder art)"
+                                    }
                                     width="50"
                                     height="50"
                                 />

@@ -1,3 +1,5 @@
+import playlistCoverMissing from './playlist-cover-missing.png'
+
 export default function PlaylistCoverImage(props) {
     function Image(props) {
         // currentPlayistCover actually holds the entire playlist object (result of getPlaylist())
@@ -11,7 +13,13 @@ export default function PlaylistCoverImage(props) {
                 />
             );
         } else {
-            return;
+            return (
+                <img
+                    className="playlist-cover"
+                    src={playlistCoverMissing}
+                    alt={`Cover for Playlist "${props.currentPlaylistCover.name}" (placeholder art)`}
+                />
+            );
         }
     }
     return (
