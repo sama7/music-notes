@@ -107,6 +107,7 @@ export default function NotesList(props) {
         }
 
         const params = new URLSearchParams({
+            userID: currentUser,
             limit: loadPlaylistsLimit,
             offset: currentPlaylistsOffset,
         });
@@ -143,7 +144,10 @@ export default function NotesList(props) {
             }
         }
 
-        const params = new URLSearchParams({ playlistID: currentPlaylist });
+        const params = new URLSearchParams({ 
+            userID: currentUser,
+            playlistID: currentPlaylist,
+         });
 
         if (currentPlaylist) {
             fetchPlaylistCover(params)
@@ -156,7 +160,7 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [currentPlaylist]);
+    }, [currentUser, currentPlaylist]);
 
     useEffect(() => {
         async function fetchPlaylistTracks(params) {
@@ -177,6 +181,7 @@ export default function NotesList(props) {
         }
 
         const params = new URLSearchParams({
+            userID: currentUser,
             playlistID: currentPlaylist,
             limit: loadTracksLimit,
             offset: currentTracksOffset,
@@ -195,7 +200,7 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [currentPlaylist, currentTracksOffset]);
+    }, [currentUser, currentPlaylist, currentTracksOffset]);
 
     useEffect(() => {
         async function fetchNotes(params) {
@@ -216,8 +221,8 @@ export default function NotesList(props) {
         }
 
         const params = new URLSearchParams({
-            userID: currentUser,
-            playlistID: currentPlaylist,
+            user: currentUser,
+            playlist: currentPlaylist,
         });
 
         if (currentPlaylist) {
