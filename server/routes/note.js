@@ -6,14 +6,14 @@ const dbo = require('../db/conn');
 
 // This section will help you get a list of all the notes.
 router.route('/?').get(function (req, res) {
-    const userID = req.query.userID;
-    const playlistID = req.query.playlistID;
-    const db_connect = dbo.getDb("music_notes");
+    const user = req.query.user;
+    const playlist = req.query.playlist;
+    const db_connect = dbo.getDb();
     db_connect
         .collection("notes")
         .find({
-            user: userID,
-            playlist: playlistID,
+            user: user,
+            playlist: playlist,
         })
         .toArray(function (err, result) {
             if (err) throw err;

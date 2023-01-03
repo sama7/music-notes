@@ -8,15 +8,16 @@ const client = new MongoClient(Db, {
 let _db;
 
 module.exports = {
-    connectToServer: function (callback) {
-        client.connect(function (err, db) {
+    connectToServer: async function (callback) {
+        try {
+            await client.connect();
             // Verify we got a good "db" object
-            if (db) {
-                _db = db.db('music_notes');
-                console.log('Successfully connected to MongoDB.');
-            }
-            return callback(err);
-        });
+            await client.db('music_notes').command({ ping: 1 });
+            _db = client.db('music_notes');
+            console.log('Successfully connected to MongoDB.');
+        } catch (error) {
+            console.error(`Error: ${error}`);
+        }
     },
 
     getDb: function () {
