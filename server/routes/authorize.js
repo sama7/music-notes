@@ -35,7 +35,7 @@ const spotifyApi = new spotifyWebApi({
     clientSecret: client_secret,
 });
 
-async function saveUserAccessToken(userID, accessToken) {
+async function saveUserAccessToken(userID, accessToken, expiresIn) {
     try {
         const db_connect = dbo.getDb();
         const myquery = {
@@ -44,12 +44,14 @@ async function saveUserAccessToken(userID, accessToken) {
         const newvalues = {
             $set: {
                 accessToken: accessToken,
-                lastModified: DateTime.now().toLocaleString(DateTime.DATETIME_SHORT),
+                expiresIn: expiresIn,
+                lastModified: DateTime.now(),
             },
         };
         await db_connect
             .collection('users')
             .updateOne(myquery, newvalues, { upsert: true });
+        // update the record if exists, otherwise create it
     } catch (error) {
         console.error(`Error in saveUserAccessToken(): ${error}`);
         throw error;
@@ -65,12 +67,13 @@ async function saveUserRefreshToken(userID, refreshToken) {
         const newvalues = {
             $set: {
                 refreshToken: refreshToken,
-                lastModified: DateTime.now().toLocaleString(DateTime.DATETIME_SHORT),
+                lastModified: DateTime.now(),
             },
         };
         await db_connect
             .collection('users')
             .updateOne(myquery, newvalues, { upsert: true });
+        // update the record if exists, otherwise create it
     } catch (error) {
         console.error(`Error in saveUserRefreshToken(): ${error}`);
         throw error;
@@ -90,31 +93,24 @@ async function getUserAccessToken(userID) {
             console.log(`No record found for User ${userID}`);
             return;
         } else {
-            return result.accessToken;
+            if (DateTime.now() - result.lastModified >= result.expiresIn / 2 * 1000) {
+                // either close to expired or expired
+                spotifyApi.setRefreshToken(result.refreshToken);
+                const data = await spotifyApi.refreshAccessToken();
+                const access_token = data.body['access_token'];
+                const expires_in = data.body['expires_in'];
+                console.log('The access token has been refreshed at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) +
+                    ' for User ' + userID);
+                console.log('access_token:', access_token);
+                await saveUserAccessToken(userID, access_token, expires_in);
+                return access_token;
+            } else {
+                // safe enough to use the current access token in db
+                return result.accessToken;
+            }
         }
     } catch (error) {
         console.error(`Error in getUserAccessToken(): ${error}`);
-        throw error;
-    }
-}
-
-async function getUserRefreshToken(userID) {
-    try {
-        const db_connect = dbo.getDb();
-        const myquery = {
-            user: userID,
-        };
-        const result = await db_connect
-            .collection('users')
-            .findOne(myquery);
-        if (!result) {
-            console.log(`No record found for User ${userID}`);
-            return;
-        } else {
-            return result.refreshToken;
-        }
-    } catch (error) {
-        console.error(`Error in getUserRefreshToken(): ${error}`);
         throw error;
     }
 }
@@ -171,30 +167,13 @@ router.route('/callback').get(function (req, res, next) {
                     'Sucessfully retrieved access token at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID +
                     '. Expires in ' + expires_in + ' s.'
                 );
-                res.json(userID);
-                return saveUserAccessToken(userID, access_token);
+                return saveUserAccessToken(userID, access_token, expires_in);
             })
             .then(data => {
                 return saveUserRefreshToken(userID, refresh_token);
             })
             .then(data => {
-                setInterval(async () => {
-                    try {
-                        const userRefreshToken = await getUserRefreshToken(userID);
-                        spotifyApi.setRefreshToken(userRefreshToken);
-                        const data = await spotifyApi.refreshAccessToken();
-                        const access_token = data.body['access_token'];
-
-                        console.log('The access token has been refreshed at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) +
-                            ' for User ' + userID);
-                        console.log('access_token:', access_token);
-                        await saveUserAccessToken(userID, access_token);
-                    }
-                    catch (error) {
-                        console.error(`Error: ${error}`);
-                        next(error);
-                    }
-                }, expires_in / 2 * 1000);
+                res.json(userID);
             })
             .catch(error => {
                 console.error('Error:', error);
