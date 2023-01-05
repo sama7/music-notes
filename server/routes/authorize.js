@@ -101,7 +101,7 @@ async function getUserAccessToken(userID) {
                 const expires_in = data.body['expires_in'];
                 console.log('The access token has been refreshed at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) +
                     ' for User ' + userID);
-                console.log('access_token:', access_token);
+                console.log('access_token:', access_token, '\n');
                 await saveUserAccessToken(userID, access_token, expires_in);
                 return access_token;
             } else {
@@ -164,8 +164,8 @@ router.route('/callback').get(function (req, res, next) {
             .then(data => {
                 userID = data.body.id;
                 console.log(
-                    'Sucessfully retrieved access token at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID +
-                    '. Expires in ' + expires_in + ' s.'
+                    'Successfully retrieved access token at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID +
+                    '. Expires in ' + expires_in + ' s.\n'
                 );
                 return saveUserAccessToken(userID, access_token, expires_in);
             })
@@ -213,7 +213,7 @@ router.route('/tracks').get(async function (req, res, next) {
     }
 });
 
-router.route('/cover').get(async function (req, res, next) {
+router.route('/playlist').get(async function (req, res, next) {
     try {
         const userAccessToken = await getUserAccessToken(req.query.userID)
         spotifyApi.setAccessToken(userAccessToken);

@@ -2,14 +2,12 @@ import playlistCoverMissing from './playlist-cover-missing.png'
 
 export default function PlaylistCoverImage(props) {
     function Image(props) {
-        // currentPlayistCover actually holds the entire playlist object (result of getPlaylist())
-        // helps to have the entire object so that we can reference the playlist name in the alt text
-        if (props.currentPlaylistCover.images && props.currentPlaylistCover.images.length > 0) {
+        if (props.currentPlaylistObject.images && props.currentPlaylistObject.images.length > 0) {
             return (
                 <img
                     className="playlist-cover"
-                    src={props.currentPlaylistCover.images[0].url}
-                    alt={`Cover for Playlist "${props.currentPlaylistCover.name}"`}
+                    src={props.currentPlaylistObject.images[0].url}
+                    alt={`Cover for Playlist "${props.currentPlaylistObject.name}"`}
                 />
             );
         } else {
@@ -17,12 +15,12 @@ export default function PlaylistCoverImage(props) {
                 <img
                     className="playlist-cover"
                     src={playlistCoverMissing}
-                    alt={`Cover for Playlist "${props.currentPlaylistCover.name}" (placeholder art)`}
+                    alt={`Cover for Playlist "${props.currentPlaylistObject.name}" (placeholder art)`}
                 />
             );
         }
     }
     return (
-        <Image currentPlaylistCover={props.currentPlaylistCover} />
+        <Image currentPlaylistObject={props.currentPlaylistObject} />
     );
 }
