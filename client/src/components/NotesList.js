@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LogInButton from './LogInButton';
 import AddNoteModal from './AddNoteModal';
 import PlaylistCoverImage from './PlaylistCoverImage';
@@ -6,6 +7,7 @@ import PlaylistSelect from './PlaylistSelect';
 import SongCollectionTable from './SongCollectionTable';
 import EditNoteModal from './EditNoteModal';
 import DeleteNoteModal from './DeleteNoteModal';
+import TokenRevokedToast from './TokenRevokedToast';
 
 export function usePrevious(value) {
     const ref = useRef();
@@ -24,7 +26,7 @@ export default function NotesList(props) {
     const [currentPlaylistsOffset, setCurrentPlaylistsOffset] = useState(0);
     const [nextUserPlaylists, setNextUserPlaylists] = useState('');
     const [currentPlaylist, setCurrentPlaylist] = useState('');
-    const [currentPlaylistCover, setCurrentPlaylistCover] = useState({});
+    const [currentPlaylistObject, setCurrentPlaylistObject] = useState({});
 
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
     const loadTracksLimit = 100;
@@ -42,11 +44,14 @@ export default function NotesList(props) {
     const [currentNote, setCurrentNote] = useState('');
     const [notesIncrement, setNotesIncrement] = useState(0);
 
+    const [isTokenRevokedToastShowing, setTokenRevokedToastShowing] = useState(false);
+
     const textareaRef = useRef(null);
     const tableRef = useRef(null);
 
     const wasEditNoteModalShowing = usePrevious(isEditNoteModalShowing);
 
+    const navigate = useNavigate();
     const code = new URLSearchParams(window.location.search).get('code');
     const state = new URLSearchParams(window.location.search).get('state');
 
@@ -55,10 +60,12 @@ export default function NotesList(props) {
             try {
                 const response = await fetch('http://localhost:5000/callback?' + params.toString(),
                     { credentials: 'include' });
-                if (!response.ok) {
+                if (response.status === 400) {
+                    return false;
+                } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
-                    return;
+                    return false;
                 }
                 const currentUser = await response.json();
                 return currentUser;
@@ -78,6 +85,14 @@ export default function NotesList(props) {
             setLoggedIn(true);
             fetchCurrentUser(params)
                 .then((fetchedUser) => {
+                    if (!fetchedUser) {
+                        navigate('/');
+                        setLoggedIn(false);
+                        setCurrentUser('');
+                        setCurrentPlaylist('');
+                        setTokenRevokedToastShowing(true);
+                        return;
+                    }
                     setCurrentUser(fetchedUser);
                     console.log(fetchedUser);
                 })
@@ -86,16 +101,18 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [code, state, isLoggedIn]);
+    }, [code, state, isLoggedIn, navigate]);
 
     useEffect(() => {
         async function fetchUserPlaylists(params) {
             try {
                 const response = await fetch('http://localhost:5000/playlists?' + params.toString());
-                if (!response.ok) {
+                if (response.status === 400) {
+                    return false;
+                } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
-                    return;
+                    return false;
                 }
                 const playlists = await response.json();
                 return playlists;
@@ -115,6 +132,14 @@ export default function NotesList(props) {
         if (currentUser) {
             fetchUserPlaylists(params)
                 .then((playlists) => {
+                    if (!playlists) {
+                        navigate('/');
+                        setLoggedIn(false);
+                        setCurrentUser('');
+                        setCurrentPlaylist('');
+                        setTokenRevokedToastShowing(true);
+                        return;
+                    }
                     setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
                     setNextUserPlaylists(playlists.next);
                     console.log(playlists);
@@ -124,52 +149,18 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [currentUser, currentPlaylistsOffset]);
-
-    useEffect(() => {
-        async function fetchPlaylistCover(params) {
-            try {
-                const response = await fetch('http://localhost:5000/cover?' + params.toString());
-                if (!response.ok) {
-                    const message = `An error occurred: ${response.statusText}`;
-                    window.alert(message);
-                    return;
-                }
-                const playlistCover = await response.json();
-                return playlistCover;
-            }
-            catch (error) {
-                console.error(`Error in fetchPlaylistCover(): ${error}`);
-                return;
-            }
-        }
-
-        const params = new URLSearchParams({ 
-            userID: currentUser,
-            playlistID: currentPlaylist,
-         });
-
-        if (currentPlaylist) {
-            fetchPlaylistCover(params)
-                .then((playlistCover) => {
-                    setCurrentPlaylistCover(playlistCover);
-                    console.log(playlistCover);
-                })
-                .catch((error) => {
-                    console.error(`Error while calling fetchPlaylistCover(): ${error}`);
-                    return;
-                });
-        }
-    }, [currentUser, currentPlaylist]);
+    }, [currentUser, currentPlaylistsOffset, navigate]);
 
     useEffect(() => {
         async function fetchPlaylistTracks(params) {
             try {
                 const response = await fetch('http://localhost:5000/tracks?' + params.toString());
-                if (!response.ok) {
+                if (response.status === 400) {
+                    return false;
+                } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
-                    return;
+                    return false;
                 }
                 const playlistTracks = await response.json();
                 return playlistTracks;
@@ -180,27 +171,79 @@ export default function NotesList(props) {
             }
         }
 
-        const params = new URLSearchParams({
+        async function fetchPlaylistObject(params) {
+            try {
+                const response = await fetch('http://localhost:5000/playlist?' + params.toString());
+                if (response.status === 400) {
+                    return false;
+                } else if (!response.ok) {
+                    const message = `An error occurred: ${response.statusText}`;
+                    window.alert(message);
+                    return false;
+                }
+                const playlistObject = await response.json();
+                return playlistObject;
+            }
+            catch (error) {
+                console.error(`Error in fetchPlaylistObject(): ${error}`);
+                return;
+            }
+        }
+
+        const trackParams = new URLSearchParams({
             userID: currentUser,
             playlistID: currentPlaylist,
             limit: loadTracksLimit,
             offset: currentTracksOffset,
         });
 
+        const playlistParams = new URLSearchParams({
+            userID: currentUser,
+            playlistID: currentPlaylist,
+        });
+
         if (currentPlaylist) {
-            fetchPlaylistTracks(params)
+            fetchPlaylistTracks(trackParams)
                 .then((playlistTracks) => {
+                    if (!playlistTracks) {
+                        navigate('/');
+                        setLoggedIn(false);
+                        setCurrentUser('');
+                        setCurrentPlaylist('');
+                        setTokenRevokedToastShowing(true);
+                        return;
+                    }
                     setCurrentPlaylistTracks(currentPlaylistTracks => (
                         [...currentPlaylistTracks, ...playlistTracks.items]));
                     setNextPlaylistTracks(playlistTracks.next);
                     console.log(playlistTracks);
+                    if (currentTracksOffset === 0) {
+                        return fetchPlaylistObject(playlistParams);
+                    } else {
+                        return true;
+                    }
+                })
+                .then((playlistObject) => {
+                    if (!playlistObject) {
+                        navigate('/');
+                        setLoggedIn(false);
+                        setCurrentUser('');
+                        setCurrentPlaylist('');
+                        setTokenRevokedToastShowing(true);
+                        return;
+                    }
+                    if (currentTracksOffset === 0) {
+                        setCurrentPlaylistObject(playlistObject);
+                        console.log(playlistObject);
+                    }
                 })
                 .catch((error) => {
-                    console.error(`Error while calling fetchPlaylistTracks(): ${error}`);
+                    console.error('Error while calling fetchPlaylistTracks() or fetchPlaylistObject():' +
+                        error);
                     return;
                 });
         }
-    }, [currentUser, currentPlaylist, currentTracksOffset]);
+    }, [currentUser, currentPlaylist, currentTracksOffset, navigate]);
 
     useEffect(() => {
         async function fetchNotes(params) {
@@ -257,10 +300,12 @@ export default function NotesList(props) {
     }
 
     function handlePlaylistChange(option) {
-        setCurrentPlaylistTracks([]);
-        setCurrentPlaylist(option.value);
-        setCurrentTracksOffset(0);
-        setNextPlaylistTracks('');
+        if (option.value !== currentPlaylist) {
+            setCurrentPlaylistTracks([]);
+            setCurrentPlaylist(option.value);
+            setCurrentTracksOffset(0);
+            setNextPlaylistTracks('');
+        }
     }
 
     useEffect(() => {
@@ -391,6 +436,10 @@ export default function NotesList(props) {
         setDeleteNoteModalShowing(false);
     }
 
+    function handleTokenRevokedToastClose() {
+        setTokenRevokedToastShowing(false);
+    }
+
     const loggedInTemplate = (
         <div>
             <PlaylistSelect
@@ -398,9 +447,9 @@ export default function NotesList(props) {
                 handlePlaylistSelectScroll={handlePlaylistSelectScroll}
                 handlePlaylistChange={handlePlaylistChange}
             />
-            {currentPlaylistTracks.length > 0 && currentPlaylistCover && (
+            {currentPlaylistTracks.length > 0 && currentPlaylistObject && (
                 <>
-                    <PlaylistCoverImage currentPlaylistCover={currentPlaylistCover} />
+                    <PlaylistCoverImage currentPlaylistObject={currentPlaylistObject} />
                     <SongCollectionTable
                         currentPlaylist={currentPlaylist}
                         currentPlaylistTracks={currentPlaylistTracks}
@@ -437,7 +486,13 @@ export default function NotesList(props) {
         </div>
     );
     const loggedOutTemplate = (
-        <LogInButton />
+        <>
+            <LogInButton />
+            <TokenRevokedToast
+                isTokenRevokedToastShowing={isTokenRevokedToastShowing}
+                handleTokenRevokedToastClose={handleTokenRevokedToastClose}
+            />
+        </>
     );
 
     return (
