@@ -44,7 +44,9 @@ table {
 
 table .note {
   /* background-color: rgb(48, 104, 68); */
-  background-color: #453C67;
+  /* background-color: #453C67; */
+  background: rgb(69, 60, 103);
+  background: linear-gradient(90deg, rgba(69, 60, 103, 1) 17%, rgba(0, 65, 112, 1) 100%);
   padding-top: 1em;
   padding-bottom: 1em;
   white-space: pre-wrap;

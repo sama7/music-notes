@@ -5,7 +5,7 @@ export default function TokenRevokedToast(props) {
     return (
         <ToastContainer className="m-3" position="top-end">
             <Toast
-                className="bg-dark text-white"
+                className="bg-dark text-white text-start"
                 onClose={props.handleTokenRevokedToastClose}
                 show={props.isTokenRevokedToastShowing}
                 delay={3000}
