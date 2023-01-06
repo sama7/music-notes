@@ -61,7 +61,7 @@ export default function NotesList(props) {
                 const response = await fetch('http://localhost:5000/callback?' + params.toString(),
                     { credentials: 'include' });
                 if (response.status === 400) {
-                    return false;
+                    return 400;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -85,16 +85,19 @@ export default function NotesList(props) {
             setLoggedIn(true);
             fetchCurrentUser(params)
                 .then((fetchedUser) => {
-                    if (!fetchedUser) {
+                    if (fetchedUser === 400) {
                         navigate('/');
                         setLoggedIn(false);
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
                         return;
+                    } else if (!fetchedUser) {
+                        return
+                    } else {
+                        setCurrentUser(fetchedUser);
+                        console.log(fetchedUser);
                     }
-                    setCurrentUser(fetchedUser);
-                    console.log(fetchedUser);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchCurrentUser(): ${error}`);
@@ -108,7 +111,7 @@ export default function NotesList(props) {
             try {
                 const response = await fetch('http://localhost:5000/playlists?' + params.toString());
                 if (response.status === 400) {
-                    return false;
+                    return 400;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -132,17 +135,20 @@ export default function NotesList(props) {
         if (currentUser) {
             fetchUserPlaylists(params)
                 .then((playlists) => {
-                    if (!playlists) {
+                    if (playlists === 400) {
                         navigate('/');
                         setLoggedIn(false);
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
                         return;
+                    } else if (!playlists) {
+                        return
+                    } else {
+                        setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
+                        setNextUserPlaylists(playlists.next);
+                        console.log(playlists);
                     }
-                    setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
-                    setNextUserPlaylists(playlists.next);
-                    console.log(playlists);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchUserPlaylists(): ${error}`);
@@ -156,7 +162,7 @@ export default function NotesList(props) {
             try {
                 const response = await fetch('http://localhost:5000/tracks?' + params.toString());
                 if (response.status === 400) {
-                    return false;
+                    return 400;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -175,7 +181,7 @@ export default function NotesList(props) {
             try {
                 const response = await fetch('http://localhost:5000/playlist?' + params.toString());
                 if (response.status === 400) {
-                    return false;
+                    return 400;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -205,36 +211,42 @@ export default function NotesList(props) {
         if (currentPlaylist) {
             fetchPlaylistTracks(trackParams)
                 .then((playlistTracks) => {
-                    if (!playlistTracks) {
+                    if (playlistTracks === 400) {
                         navigate('/');
                         setLoggedIn(false);
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
                         return;
-                    }
-                    setCurrentPlaylistTracks(currentPlaylistTracks => (
-                        [...currentPlaylistTracks, ...playlistTracks.items]));
-                    setNextPlaylistTracks(playlistTracks.next);
-                    console.log(playlistTracks);
-                    if (currentTracksOffset === 0) {
-                        return fetchPlaylistObject(playlistParams);
+                    } else if (!playlistTracks) {
+                        return;
                     } else {
-                        return true;
+                        setCurrentPlaylistTracks(currentPlaylistTracks => (
+                            [...currentPlaylistTracks, ...playlistTracks.items]));
+                        setNextPlaylistTracks(playlistTracks.next);
+                        console.log(playlistTracks);
+                        if (currentTracksOffset === 0) {
+                            return fetchPlaylistObject(playlistParams);
+                        } else {
+                            return true;
+                        }
                     }
                 })
                 .then((playlistObject) => {
-                    if (!playlistObject) {
+                    if (playlistObject === 400) {
                         navigate('/');
                         setLoggedIn(false);
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
                         return;
-                    }
-                    if (currentTracksOffset === 0) {
-                        setCurrentPlaylistObject(playlistObject);
-                        console.log(playlistObject);
+                    } else if (!playlistObject) {
+                        return;
+                    } else {
+                        if (currentTracksOffset === 0) {
+                            setCurrentPlaylistObject(playlistObject);
+                            console.log(playlistObject);
+                        }
                     }
                 })
                 .catch((error) => {
