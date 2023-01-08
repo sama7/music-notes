@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import LogInButton from './LogInButton';
 import AddNoteModal from './AddNoteModal';
@@ -9,6 +9,7 @@ import EditNoteModal from './EditNoteModal';
 import DeleteNoteModal from './DeleteNoteModal';
 import TokenRevokedToast from './TokenRevokedToast';
 import RateLimitModal from './RateLimitModal';
+import { DateTime } from 'luxon';
 
 export function usePrevious(value) {
     const ref = useRef();
@@ -170,7 +171,8 @@ export default function NotesList(props) {
                 if (response.status === 400) {
                     return 400;
                 } else if (response.status === 429) {
-                    localStorage.setItem('retryAfter', response.headers.get('retry-after'));
+                    localStorage.setItem('retryAfterTime',
+                        DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
                     return 429;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
@@ -465,29 +467,32 @@ export default function NotesList(props) {
     }
 
     function handleRateLimitModalShow() {
-        setRateLimitSecondsLeft(localStorage.getItem('retryAfter'));
+        setRateLimitSecondsLeft((localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds()));
         setRateLimitModalShowing(true);
     }
 
+    const handleRateLimitModalClose = useCallback(() => {
+        if (retryIntervalID) {
+            clearInterval(retryIntervalID);
+            setRetryIntervalID(null);
+        }
+        setRateLimitModalShowing(false);
+        setRateLimitSecondsLeft(0);
+    }, [retryIntervalID]);
+
     useEffect(() => {
-        if (prevRateLimitSecondsLeft === 0 && rateLimitSecondsLeft > 0) {
+        if (!prevRateLimitSecondsLeft && rateLimitSecondsLeft > 0) {
             const intervalId = setInterval(() => {
-                if (rateLimitSecondsLeft > 0) {
-                    setRateLimitSecondsLeft(rateLimitSecondsLeft => rateLimitSecondsLeft - 1);
-                }
+                setRateLimitSecondsLeft(localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds());
             }, 1000);
             setRetryIntervalID(intervalId);
         }
-        if (prevRateLimitSecondsLeft > 0 && rateLimitSecondsLeft === 0) {
+        if (rateLimitSecondsLeft < 0 && retryIntervalID) {
             clearInterval(retryIntervalID);
             setRetryIntervalID(null);
             handleRateLimitModalClose();
         }
-    }, [prevRateLimitSecondsLeft, rateLimitSecondsLeft, retryIntervalID]);
-
-    function handleRateLimitModalClose() {
-        setRateLimitModalShowing(false);
-    }
+    }, [prevRateLimitSecondsLeft, rateLimitSecondsLeft, retryIntervalID, handleRateLimitModalClose]);
 
     const loggedInTemplate = (
         <div>
@@ -534,6 +539,7 @@ export default function NotesList(props) {
             />
             <RateLimitModal
                 isRateLimitModalShowing={isRateLimitModalShowing}
+                handleRateLimitModalClose={handleRateLimitModalClose}
                 rateLimitSecondsLeft={rateLimitSecondsLeft}
             />
         </div>
