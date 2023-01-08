@@ -8,6 +8,7 @@ import SongCollectionTable from './SongCollectionTable';
 import EditNoteModal from './EditNoteModal';
 import DeleteNoteModal from './DeleteNoteModal';
 import TokenRevokedToast from './TokenRevokedToast';
+import RateLimitModal from './RateLimitModal';
 
 export function usePrevious(value) {
     const ref = useRef();
@@ -46,10 +47,15 @@ export default function NotesList(props) {
 
     const [isTokenRevokedToastShowing, setTokenRevokedToastShowing] = useState(false);
 
+    const [rateLimitSecondsLeft, setRateLimitSecondsLeft] = useState(0);
+    const [isRateLimitModalShowing, setRateLimitModalShowing] = useState(false);
+    const [retryIntervalID, setRetryIntervalID] = useState(null);
+
     const textareaRef = useRef(null);
     const tableRef = useRef(null);
 
     const wasEditNoteModalShowing = usePrevious(isEditNoteModalShowing);
+    const prevRateLimitSecondsLeft = usePrevious(rateLimitSecondsLeft);
 
     const navigate = useNavigate();
     const code = new URLSearchParams(window.location.search).get('code');
@@ -163,6 +169,9 @@ export default function NotesList(props) {
                 const response = await fetch('http://localhost:5000/tracks?' + params.toString());
                 if (response.status === 400) {
                     return 400;
+                } else if (response.status === 429) {
+                    localStorage.setItem('retryAfter', response.headers.get('retry-after'));
+                    return 429;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -217,6 +226,9 @@ export default function NotesList(props) {
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
+                        return;
+                    } else if (playlistTracks === 429) {
+                        handleRateLimitModalShow();
                         return;
                     } else if (!playlistTracks) {
                         return;
@@ -452,6 +464,31 @@ export default function NotesList(props) {
         setTokenRevokedToastShowing(false);
     }
 
+    function handleRateLimitModalShow() {
+        setRateLimitSecondsLeft(localStorage.getItem('retryAfter'));
+        setRateLimitModalShowing(true);
+    }
+
+    useEffect(() => {
+        if (prevRateLimitSecondsLeft === 0 && rateLimitSecondsLeft > 0) {
+            const intervalId = setInterval(() => {
+                if (rateLimitSecondsLeft > 0) {
+                    setRateLimitSecondsLeft(rateLimitSecondsLeft => rateLimitSecondsLeft - 1);
+                }
+            }, 1000);
+            setRetryIntervalID(intervalId);
+        }
+        if (prevRateLimitSecondsLeft > 0 && rateLimitSecondsLeft === 0) {
+            clearInterval(retryIntervalID);
+            setRetryIntervalID(null);
+            handleRateLimitModalClose();
+        }
+    }, [prevRateLimitSecondsLeft, rateLimitSecondsLeft, retryIntervalID]);
+
+    function handleRateLimitModalClose() {
+        setRateLimitModalShowing(false);
+    }
+
     const loggedInTemplate = (
         <div>
             <PlaylistSelect
@@ -494,6 +531,10 @@ export default function NotesList(props) {
                 handleDeleteNoteSubmit={handleDeleteNoteSubmit}
                 currentTrackName={currentTrackName}
                 currentTrackArtistsNames={currentTrackArtistsNames}
+            />
+            <RateLimitModal
+                isRateLimitModalShowing={isRateLimitModalShowing}
+                rateLimitSecondsLeft={rateLimitSecondsLeft}
             />
         </div>
     );

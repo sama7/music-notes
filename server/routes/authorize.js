@@ -206,7 +206,13 @@ router.route('/tracks').get(async function (req, res, next) {
             limit: req.query.limit,
             offset: req.query.offset,
         });
-        res.json(data.body);
+        if (data.body.total === 740 && req.query.offset > 0) {
+            // res.setHeader('Retry-After', 15);
+            res.writeHead(429, { 'Retry-After': 60 });
+            res.end('okay');
+        } else {
+            res.json(data.body);
+        }
     } catch (error) {
         console.error('Error:', error);
         next(error);
