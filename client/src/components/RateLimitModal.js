@@ -4,7 +4,9 @@ import Button from 'react-bootstrap/Button';
 import { DateTime } from 'luxon';
 
 export default function RateLimitModal(props) {
-    const rateLimitSecondsLeftString = DateTime.now().plus(props.rateLimitSecondsLeft * 1000).toRelative();
+    // const rateLimitSecondsLeftString = DateTime.now().plus(props.rateLimitSecondsLeft * 1000).toRelative();
+    const retryAfterTime = localStorage.getItem('retryAfterTime') ? Math.ceil(localStorage.getItem('retryAfterTime')) : 0;
+    const rateLimitSecondsLeftString = DateTime.fromSeconds(retryAfterTime).toRelative();
     return (
         <Modal show={props.isRateLimitModalShowing} onHide={props.handleRateLimitModalClose} centered>
             <Modal.Header className="bg-dark text-white" closeButton closeVariant="white">
