@@ -69,6 +69,10 @@ export default function NotesList(props) {
                     { credentials: 'include' });
                 if (response.status === 400) {
                     return 400;
+                } else if (response.status === 429) {
+                    localStorage.setItem('retryAfterTime',
+                        DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
+                    return 429;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -99,6 +103,9 @@ export default function NotesList(props) {
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
                         return;
+                    } else if (fetchedUser === 429) {
+                        handleRateLimitModalShow();
+                        return;
                     } else if (!fetchedUser) {
                         return
                     } else {
@@ -119,6 +126,10 @@ export default function NotesList(props) {
                 const response = await fetch('http://localhost:5000/playlists?' + params.toString());
                 if (response.status === 400) {
                     return 400;
+                } else if (response.status === 429) {
+                    localStorage.setItem('retryAfterTime',
+                        DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
+                    return 429;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -148,6 +159,9 @@ export default function NotesList(props) {
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
+                        return;
+                    } else if (playlists === 429) {
+                        handleRateLimitModalShow();
                         return;
                     } else if (!playlists) {
                         return
@@ -193,6 +207,10 @@ export default function NotesList(props) {
                 const response = await fetch('http://localhost:5000/playlist?' + params.toString());
                 if (response.status === 400) {
                     return 400;
+                } else if (response.status === 429) {
+                    localStorage.setItem('retryAfterTime',
+                        DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
+                    return 429;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -253,6 +271,9 @@ export default function NotesList(props) {
                         setCurrentUser('');
                         setCurrentPlaylist('');
                         setTokenRevokedToastShowing(true);
+                        return;
+                    } else if (playlistObject === 429) {
+                        handleRateLimitModalShow();
                         return;
                     } else if (!playlistObject) {
                         return;
@@ -321,18 +342,27 @@ export default function NotesList(props) {
 
     function handlePlaylistSelectScroll() {
         if (nextUserPlaylists) {
-            setCurrentPlaylistsOffset(currentPlaylistsOffset + loadPlaylistsLimit);
+            if (DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'))) {
+                handleRateLimitModalShow();
+            } else {
+                setCurrentPlaylistsOffset(currentPlaylistsOffset + loadPlaylistsLimit);
+            }
         }
     }
 
     function handlePlaylistChange(option) {
-        if (option.value !== currentPlaylist) {
-            setCurrentPlaylistTracks([]);
-            setCurrentPlaylist(option.value);
-            setCurrentTracksOffset(0);
-            setNextPlaylistTracks('');
+        if (DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'))) {
+            handleRateLimitModalShow();
+        } else {
+            if (option.value !== currentPlaylist) {
+                setCurrentPlaylistTracks([]);
+                setCurrentPlaylist(option.value);
+                setCurrentTracksOffset(0);
+                setNextPlaylistTracks('');
+            }
         }
     }
+
 
     useEffect(() => {
         function isBottom(obj) {
@@ -346,7 +376,11 @@ export default function NotesList(props) {
         function handleTracksScroll() {
             const wrappedElement = tableRef.current;
             if (isBottom(wrappedElement) && nextPlaylistTracks) {
-                setCurrentTracksOffset(currentTracksOffset => currentTracksOffset + loadTracksLimit);
+                if (DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'))) {
+                    handleRateLimitModalShow();
+                } else {
+                    setCurrentTracksOffset(currentTracksOffset => currentTracksOffset + loadTracksLimit);
+                }
             }
         }
         window.addEventListener("scroll", handleTracksScroll, { passive: true });
@@ -467,7 +501,7 @@ export default function NotesList(props) {
     }
 
     function handleRateLimitModalShow() {
-        setRateLimitSecondsLeft((localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds()));
+        setRateLimitSecondsLeft(Math.ceil(localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds()));
         setRateLimitModalShowing(true);
     }
 
@@ -487,7 +521,7 @@ export default function NotesList(props) {
             }, 1000);
             setRetryIntervalID(intervalId);
         }
-        if (rateLimitSecondsLeft < 0 && retryIntervalID) {
+        if (rateLimitSecondsLeft <= 0 && retryIntervalID) {
             clearInterval(retryIntervalID);
             setRetryIntervalID(null);
             handleRateLimitModalClose();
@@ -540,7 +574,6 @@ export default function NotesList(props) {
             <RateLimitModal
                 isRateLimitModalShowing={isRateLimitModalShowing}
                 handleRateLimitModalClose={handleRateLimitModalClose}
-                rateLimitSecondsLeft={rateLimitSecondsLeft}
             />
         </div>
     );
