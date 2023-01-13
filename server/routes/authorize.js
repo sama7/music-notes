@@ -102,8 +102,9 @@ async function getUserAccessToken(userID) {
                 const data = await spotifyApi.refreshAccessToken();
                 const access_token = data.body['access_token'];
                 const expires_in = data.body['expires_in'];
-                console.log('The access token has been refreshed at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) +
-                    ' for User ' + userID);
+                console.log('The access token has been refreshed at ' +
+                    DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID
+                );
                 console.log('access_token:', access_token, '\n');
                 await saveUserAccessToken(userID, access_token, expires_in);
                 return access_token;
@@ -138,88 +139,42 @@ router.route('/callback').get(function (req, res, next) {
     let expires_in;
     let userID;
 
+    if (retryIntervalID) {
+        res.writeHead(429, { 'Retry-After': retryAfterSeconds });
+        res.end('okay');
+        return;
+    }
     if (error) {
         console.error('Callback Error:', error);
-        next(error);
+        return next(error);
     }
     if (state === null || state !== storedState) {
         const params = new URLSearchParams({
             error: 'state_mismatch'
         });
         res.redirect(`http://localhost:${clientPort}/#` + params.toString());
-    } else {
-        res.clearCookie(stateKey);
-        spotifyApi
-            .authorizationCodeGrant(code)
-            .then(data => {
-                access_token = data.body['access_token'];
-                refresh_token = data.body['refresh_token'];
-                expires_in = data.body['expires_in'];
-
-                spotifyApi.setAccessToken(access_token);
-                spotifyApi.setRefreshToken(refresh_token);
-
-                console.log('access_token:', access_token);
-                console.log('refresh_token:', refresh_token);
-
-                if (!retryIntervalID) {
-                    return spotifyApi.getMe();
-                } else {
-                    res.writeHead(429, { 'Retry-After': retryAfterSeconds });
-                    res.end('okay');
-                    return;
-                }
-            })
-            .then(data => {
-                if (data) {
-                    if (data.statusCode === 429) {
-                        retryAfterSeconds = data.headers['Retry-After'] + 1;
-                        retryIntervalID = setInterval(() => {
-                            retryAfterSeconds -= 1;
-                        }, 1000);
-                        if (!retryAfterSeconds) {
-                            clearInterval(retryIntervalID);
-                            retryIntervalID = null;
-                        }
-                        return;
-                    } else {
-                        userID = data.body.id;
-                        console.log(
-                            'Successfully retrieved access token at ' + DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID +
-                            '. Expires in ' + expires_in + ' s.\n'
-                        );
-                        return saveUserAccessToken(userID, access_token, expires_in);
-                    }
-                } else {
-                    return;
-                }
-            })
-            .then(data => {
-                return saveUserRefreshToken(userID, refresh_token);
-            })
-            .then(data => {
-                if (!retryIntervalID) {
-                    res.json(userID);
-                } else {
-                    return;
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                next(error);
-            });
+        return;
     }
-});
+    res.clearCookie(stateKey);
+    spotifyApi
+        .authorizationCodeGrant(code)
+        .then(data => {
+            access_token = data.body['access_token'];
+            refresh_token = data.body['refresh_token'];
+            expires_in = data.body['expires_in'];
 
-router.route('/playlists').get(async function (req, res, next) {
-    try {
-        if (!retryIntervalID) {
-            const userAccessToken = await getUserAccessToken(req.query.userID)
-            spotifyApi.setAccessToken(userAccessToken);
-            const data = await spotifyApi.getUserPlaylists({
-                limit: req.query.limit,
-                offset: req.query.offset,
-            });
+            spotifyApi.setAccessToken(access_token);
+            spotifyApi.setRefreshToken(refresh_token);
+
+            console.log('access_token:', access_token);
+            console.log('refresh_token:', refresh_token);
+
+            return spotifyApi.getMe();
+        })
+        .then(data => {
+            if (!data) {
+                return
+            }
             if (data.statusCode === 429) {
                 retryAfterSeconds = data.headers['Retry-After'] + 1;
                 retryIntervalID = setInterval(() => {
@@ -230,14 +185,52 @@ router.route('/playlists').get(async function (req, res, next) {
                     retryIntervalID = null;
                 }
                 return;
-            } else {
-                res.json(data.body);
             }
-        } else {
+            userID = data.body.id;
+            console.log(
+                'Successfully retrieved access token at ' +
+                DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID +
+                '. Expires in ' + expires_in + ' s.\n'
+            );
+            return saveUserAccessToken(userID, access_token, expires_in);
+        })
+        .then(data => {
+            return saveUserRefreshToken(userID, refresh_token);
+        })
+        .then(data => {
+            res.json(userID);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            next(error);
+        });
+});
+
+router.route('/playlists').get(async function (req, res, next) {
+    try {
+        if (retryIntervalID) {
             res.writeHead(429, { 'Retry-After': retryAfterSeconds });
             res.end('okay');
             return;
         }
+        const userAccessToken = await getUserAccessToken(req.query.userID)
+        spotifyApi.setAccessToken(userAccessToken);
+        const data = await spotifyApi.getUserPlaylists({
+            limit: req.query.limit,
+            offset: req.query.offset,
+        });
+        if (data.statusCode === 429) {
+            retryAfterSeconds = data.headers['Retry-After'] + 1;
+            retryIntervalID = setInterval(() => {
+                retryAfterSeconds -= 1;
+            }, 1000);
+            if (!retryAfterSeconds) {
+                clearInterval(retryIntervalID);
+                retryIntervalID = null;
+            }
+            return;
+        }
+        res.json(data.body);
     } catch (error) {
         console.error('Error:', error);
         next(error);
@@ -246,42 +239,30 @@ router.route('/playlists').get(async function (req, res, next) {
 
 router.route('/tracks').get(async function (req, res, next) {
     try {
-        if (!retryIntervalID) {
-            const userAccessToken = await getUserAccessToken(req.query.userID)
-            spotifyApi.setAccessToken(userAccessToken);
-            const playlistID = req.query.playlistID;
-            const data = await spotifyApi.getPlaylistTracks(playlistID, {
-                limit: req.query.limit,
-                offset: req.query.offset,
-            });
-            if (data.body.id === '4ziXXgnsKLeptieArS1zEt') {
-                res.writeHead(429, { 'Retry-After': 20 });
-                res.end('okay');
-                return;
-            }
-            if (data.body.total === 740 && req.query.offset > 0) {
-                // res.setHeader('Retry-After', 15);
-                res.writeHead(429, { 'Retry-After': 20 });
-                res.end('okay');
-                // } 
-                // if (data.statusCode === 429) {
-                //     retryAfterSeconds = data.headers['Retry-After'] + 1;
-                //     retryIntervalID = setInterval(() => {
-                //         retryAfterSeconds -= 1;
-                //     }, 1000);
-                //     if (!retryAfterSeconds) {
-                //         clearInterval(retryIntervalID);
-                //         retryIntervalID = null;
-                //     }
-                //     return;
-            } else {
-                res.json(data.body);
-            }
-        } else {
+        if (retryIntervalID) {
             res.writeHead(429, { 'Retry-After': retryAfterSeconds });
             res.end('okay');
             return;
         }
+        const userAccessToken = await getUserAccessToken(req.query.userID)
+        spotifyApi.setAccessToken(userAccessToken);
+        const playlistID = req.query.playlistID;
+        const data = await spotifyApi.getPlaylistTracks(playlistID, {
+            limit: req.query.limit,
+            offset: req.query.offset,
+        });
+        if (data.statusCode === 429) {
+            retryAfterSeconds = data.headers['Retry-After'] + 1;
+            retryIntervalID = setInterval(() => {
+                retryAfterSeconds -= 1;
+            }, 1000);
+            if (!retryAfterSeconds) {
+                clearInterval(retryIntervalID);
+                retryIntervalID = null;
+            }
+            return;
+        }
+        res.json(data.body);
     } catch (error) {
         console.error('Error:', error);
         next(error);
@@ -290,34 +271,27 @@ router.route('/tracks').get(async function (req, res, next) {
 
 router.route('/playlist').get(async function (req, res, next) {
     try {
-        if (!retryIntervalID) {
-            const userAccessToken = await getUserAccessToken(req.query.userID)
-            spotifyApi.setAccessToken(userAccessToken);
-            const playlistID = req.query.playlistID;
-            const data = await spotifyApi.getPlaylist(playlistID);
-            if (data.body.id === '4ziXXgnsKLeptieArS1zEt') {
-                res.writeHead(429, { 'Retry-After': 20 });
-                res.end('okay');
-                return;
-            }
-            if (data.statusCode === 429) {
-                retryAfterSeconds = data.headers['Retry-After'] + 1;
-                retryIntervalID = setInterval(() => {
-                    retryAfterSeconds -= 1;
-                }, 1000);
-                if (!retryAfterSeconds) {
-                    clearInterval(retryIntervalID);
-                    retryIntervalID = null;
-                }
-                return;
-            } else {
-                res.json(data.body);
-            }
-        } else {
+        if (retryIntervalID) {
             res.writeHead(429, { 'Retry-After': retryAfterSeconds });
             res.end('okay');
             return;
         }
+        const userAccessToken = await getUserAccessToken(req.query.userID)
+        spotifyApi.setAccessToken(userAccessToken);
+        const playlistID = req.query.playlistID;
+        const data = await spotifyApi.getPlaylist(playlistID);
+        if (data.statusCode === 429) {
+            retryAfterSeconds = data.headers['Retry-After'] + 1;
+            retryIntervalID = setInterval(() => {
+                retryAfterSeconds -= 1;
+            }, 1000);
+            if (!retryAfterSeconds) {
+                clearInterval(retryIntervalID);
+                retryIntervalID = null;
+            }
+            return;
+        }
+        res.json(data.body);
     } catch (error) {
         console.error('Error:', error);
         next(error);

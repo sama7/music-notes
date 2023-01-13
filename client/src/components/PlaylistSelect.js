@@ -1,4 +1,3 @@
-// import { DateTime } from 'luxon';
 import Select from 'react-select';
 
 export default function PlaylistSelect(props) {
@@ -6,9 +5,8 @@ export default function PlaylistSelect(props) {
         value: playlist.id,
         label: playlist.name,
     }));
-    // const waitingForRetry = DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'));
     return (
-        <div className="form-group">
+        <div onClick={props.handleSelectClick} className="form-group">
             <label htmlFor="playlist-select">Choose a playlist:</label>
             <Select
                 id="playlist-select"
@@ -33,7 +31,7 @@ export default function PlaylistSelect(props) {
                     }),
                 }}
                 onMenuScrollToBottom={props.handlePlaylistSelectScroll}
-                // isDisabled={waitingForRetry}
+                isDisabled={props.isWaitingToRetry}
             />
         </div>
     );

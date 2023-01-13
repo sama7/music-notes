@@ -48,6 +48,7 @@ export default function NotesList(props) {
 
     const [isTokenRevokedToastShowing, setTokenRevokedToastShowing] = useState(false);
 
+    const [isWaitingToRetry, setWaitingToRetry] = useState(false);
     const [rateLimitSecondsLeft, setRateLimitSecondsLeft] = useState(0);
     const [isRateLimitModalShowing, setRateLimitModalShowing] = useState(false);
     const [retryIntervalID, setRetryIntervalID] = useState(null);
@@ -56,6 +57,7 @@ export default function NotesList(props) {
     const tableRef = useRef(null);
 
     const wasEditNoteModalShowing = usePrevious(isEditNoteModalShowing);
+    const wasWaitingToRetry = usePrevious(isWaitingToRetry);
     const prevRateLimitSecondsLeft = usePrevious(rateLimitSecondsLeft);
 
     const navigate = useNavigate();
@@ -104,14 +106,14 @@ export default function NotesList(props) {
                         setTokenRevokedToastShowing(true);
                         return;
                     } else if (fetchedUser === 429) {
+                        setWaitingToRetry(true);
                         handleRateLimitModalShow();
                         return;
                     } else if (!fetchedUser) {
                         return
-                    } else {
-                        setCurrentUser(fetchedUser);
-                        console.log(fetchedUser);
                     }
+                    setCurrentUser(fetchedUser);
+                    console.log(fetchedUser);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchCurrentUser(): ${error}`);
@@ -161,15 +163,15 @@ export default function NotesList(props) {
                         setTokenRevokedToastShowing(true);
                         return;
                     } else if (playlists === 429) {
+                        setWaitingToRetry(true);
                         handleRateLimitModalShow();
                         return;
                     } else if (!playlists) {
                         return
-                    } else {
-                        setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
-                        setNextUserPlaylists(playlists.next);
-                        console.log(playlists);
                     }
+                    setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
+                    setNextUserPlaylists(playlists.next);
+                    console.log(playlists);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchUserPlaylists(): ${error}`);
@@ -248,20 +250,21 @@ export default function NotesList(props) {
                         setTokenRevokedToastShowing(true);
                         return;
                     } else if (playlistTracks === 429) {
+                        setWaitingToRetry(true);
                         handleRateLimitModalShow();
                         return;
                     } else if (!playlistTracks) {
                         return;
+                    }
+                    setCurrentPlaylistTracks(currentPlaylistTracks => (
+                        [...currentPlaylistTracks, ...playlistTracks.items]
+                    ));
+                    setNextPlaylistTracks(playlistTracks.next);
+                    console.log(playlistTracks);
+                    if (currentTracksOffset === 0) {
+                        return fetchPlaylistObject(playlistParams);
                     } else {
-                        setCurrentPlaylistTracks(currentPlaylistTracks => (
-                            [...currentPlaylistTracks, ...playlistTracks.items]));
-                        setNextPlaylistTracks(playlistTracks.next);
-                        console.log(playlistTracks);
-                        if (currentTracksOffset === 0) {
-                            return fetchPlaylistObject(playlistParams);
-                        } else {
-                            return true;
-                        }
+                        return true;
                     }
                 })
                 .then((playlistObject) => {
@@ -273,15 +276,15 @@ export default function NotesList(props) {
                         setTokenRevokedToastShowing(true);
                         return;
                     } else if (playlistObject === 429) {
+                        setWaitingToRetry(true);
                         handleRateLimitModalShow();
                         return;
                     } else if (!playlistObject) {
                         return;
-                    } else {
-                        if (currentTracksOffset === 0) {
-                            setCurrentPlaylistObject(playlistObject);
-                            console.log(playlistObject);
-                        }
+                    }
+                    if (currentTracksOffset === 0) {
+                        setCurrentPlaylistObject(playlistObject);
+                        console.log(playlistObject);
                     }
                 })
                 .catch((error) => {
@@ -342,27 +345,18 @@ export default function NotesList(props) {
 
     function handlePlaylistSelectScroll() {
         if (nextUserPlaylists) {
-            if (DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'))) {
-                handleRateLimitModalShow();
-            } else {
-                setCurrentPlaylistsOffset(currentPlaylistsOffset + loadPlaylistsLimit);
-            }
+            setCurrentPlaylistsOffset(currentPlaylistsOffset + loadPlaylistsLimit);
         }
     }
 
     function handlePlaylistChange(option) {
-        if (DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'))) {
-            handleRateLimitModalShow();
-        } else {
-            if (option.value !== currentPlaylist) {
-                setCurrentPlaylistTracks([]);
-                setCurrentPlaylist(option.value);
-                setCurrentTracksOffset(0);
-                setNextPlaylistTracks('');
-            }
+        if (option.value !== currentPlaylist) {
+            setCurrentPlaylistTracks([]);
+            setCurrentPlaylist(option.value);
+            setCurrentTracksOffset(0);
+            setNextPlaylistTracks('');
         }
     }
-
 
     useEffect(() => {
         function isBottom(obj) {
@@ -378,9 +372,8 @@ export default function NotesList(props) {
             if (isBottom(wrappedElement) && nextPlaylistTracks) {
                 if (DateTime.now().toSeconds() < Math.ceil(localStorage.getItem('retryAfterTime'))) {
                     handleRateLimitModalShow();
-                } else {
-                    setCurrentTracksOffset(currentTracksOffset => currentTracksOffset + loadTracksLimit);
                 }
+                setCurrentTracksOffset(currentTracksOffset => currentTracksOffset + loadTracksLimit);
             }
         }
         window.addEventListener("scroll", handleTracksScroll, { passive: true });
@@ -501,7 +494,9 @@ export default function NotesList(props) {
     }
 
     function handleRateLimitModalShow() {
-        setRateLimitSecondsLeft(Math.ceil(localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds()));
+        setRateLimitSecondsLeft(
+            Math.ceil(localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds())
+        );
         setRateLimitModalShowing(true);
     }
 
@@ -515,9 +510,22 @@ export default function NotesList(props) {
     }, [retryIntervalID]);
 
     useEffect(() => {
+        if (!wasWaitingToRetry && isWaitingToRetry) {
+            setTimeout(() => {
+                setWaitingToRetry(false);
+            }, Math.ceil(localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds()) * 1000);
+        }
+        if (wasWaitingToRetry && !isWaitingToRetry) {
+            handleRateLimitModalClose();
+        }
+    }, [wasWaitingToRetry, isWaitingToRetry, handleRateLimitModalClose]);
+
+    useEffect(() => {
         if (!prevRateLimitSecondsLeft && rateLimitSecondsLeft > 0) {
             const intervalId = setInterval(() => {
-                setRateLimitSecondsLeft(localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds());
+                setRateLimitSecondsLeft(
+                    localStorage.getItem('retryAfterTime') - DateTime.now().toSeconds()
+                );
             }, 1000);
             setRetryIntervalID(intervalId);
         }
@@ -528,12 +536,20 @@ export default function NotesList(props) {
         }
     }, [prevRateLimitSecondsLeft, rateLimitSecondsLeft, retryIntervalID, handleRateLimitModalClose]);
 
+    function handleSelectClick() {
+        if (isWaitingToRetry) {
+            handleRateLimitModalShow();
+        }
+    }
+
     const loggedInTemplate = (
         <div>
             <PlaylistSelect
                 userPlaylists={userPlaylists}
                 handlePlaylistSelectScroll={handlePlaylistSelectScroll}
                 handlePlaylistChange={handlePlaylistChange}
+                isWaitingToRetry={isWaitingToRetry}
+                handleSelectClick={handleSelectClick}
             />
             {currentPlaylistTracks.length > 0 && currentPlaylistObject && (
                 <>
