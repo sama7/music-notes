@@ -261,37 +261,36 @@ export default function NotesList(props) {
                     ));
                     setNextPlaylistTracks(playlistTracks.next);
                     console.log(playlistTracks);
-                    if (currentTracksOffset === 0) {
-                        return fetchPlaylistObject(playlistParams);
-                    } else {
-                        return true;
-                    }
-                })
-                .then((playlistObject) => {
-                    if (playlistObject === 400) {
-                        navigate('/');
-                        setLoggedIn(false);
-                        setCurrentUser('');
-                        setCurrentPlaylist('');
-                        setTokenRevokedToastShowing(true);
-                        return;
-                    } else if (playlistObject === 429) {
-                        setWaitingToRetry(true);
-                        handleRateLimitModalShow();
-                        return;
-                    } else if (!playlistObject) {
-                        return;
-                    }
-                    if (currentTracksOffset === 0) {
-                        setCurrentPlaylistObject(playlistObject);
-                        console.log(playlistObject);
-                    }
                 })
                 .catch((error) => {
-                    console.error('Error while calling fetchPlaylistTracks() or fetchPlaylistObject():' +
-                        error);
+                    console.error('Error while calling fetchPlaylistTracks():' + error);
                     return;
                 });
+            if (currentTracksOffset === 0) {
+                fetchPlaylistObject(playlistParams)
+                    .then((playlistObject) => {
+                        if (playlistObject === 400) {
+                            navigate('/');
+                            setLoggedIn(false);
+                            setCurrentUser('');
+                            setCurrentPlaylist('');
+                            setTokenRevokedToastShowing(true);
+                            return;
+                        } else if (playlistObject === 429) {
+                            setWaitingToRetry(true);
+                            handleRateLimitModalShow();
+                            return;
+                        } else if (!playlistObject) {
+                            return;
+                        }
+                        setCurrentPlaylistObject(playlistObject);
+                        console.log(playlistObject);
+                    })
+                    .catch((error) => {
+                        console.error('Error while calling fetchPlaylistObject():' + error);
+                        return;
+                    });
+            }
         }
     }, [currentUser, currentPlaylist, currentTracksOffset, navigate]);
 
