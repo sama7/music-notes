@@ -101,12 +101,18 @@ async function getUserAccessToken(userID) {
                 spotifyApi.setRefreshToken(result.refreshToken);
                 const data = await spotifyApi.refreshAccessToken();
                 const access_token = data.body['access_token'];
+                const refresh_token = data.body['refresh_token'];
                 const expires_in = data.body['expires_in'];
                 console.log('The access token has been refreshed at ' +
                     DateTime.now().toLocaleString(DateTime.DATETIME_SHORT) + ' for User ' + userID
                 );
-                console.log('access_token:', access_token, '\n');
+                console.log('access_token:', access_token);
                 await saveUserAccessToken(userID, access_token, expires_in);
+                if (refresh_token) {
+                    console.log('refresh_token:', refresh_token);
+                    await saveUserRefreshToken(userID, refresh_token);
+                }
+                console.log();
                 return access_token;
             } else {
                 // safe enough to use the current access token in db
