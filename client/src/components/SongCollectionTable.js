@@ -1,9 +1,10 @@
 import { forwardRef } from 'react';
+import Table from 'react-bootstrap/Table';
 import SongCollectionRows from './SongCollectionRows';
 
 const SongCollectionTable = forwardRef(function SongCollectionTable(props, ref) {
     return (
-        <table className="table table-dark table-hover" ref={ref}>
+        <Table responsive className="table table-dark table-hover" ref={ref}>
             <thead>
                 <tr>
                     <th className="number text-center" scope="col">#</th>
@@ -21,7 +22,7 @@ const SongCollectionTable = forwardRef(function SongCollectionTable(props, ref) 
                 handleDeleteNoteModalShow={props.handleDeleteNoteModalShow}
                 notes={props.notes}
             />
-        </table>
+        </Table>
     );
 });
 
