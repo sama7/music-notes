@@ -10,6 +10,7 @@ import DeleteNoteModal from './DeleteNoteModal';
 import TokenRevokedToast from './TokenRevokedToast';
 import RateLimitModal from './RateLimitModal';
 import { DateTime } from 'luxon';
+import RefreshPlaylistsButton from './RefreshPlaylistsButton';
 
 export function usePrevious(value) {
     const ref = useRef();
@@ -122,30 +123,63 @@ export default function NotesList(props) {
         }
     }, [code, state, isLoggedIn, navigate]);
 
-    useEffect(() => {
-        async function fetchUserPlaylists(params) {
-            try {
-                const response = await fetch('http://localhost:5000/playlists?' + params.toString());
-                if (response.status === 400) {
-                    return 400;
-                } else if (response.status === 429) {
-                    localStorage.setItem('retryAfterTime',
-                        DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
-                    return 429;
-                } else if (!response.ok) {
-                    const message = `An error occurred: ${response.statusText}`;
-                    window.alert(message);
-                    return false;
-                }
-                const playlists = await response.json();
-                return playlists;
+    async function fetchUserPlaylists(params) {
+        try {
+            const response = await fetch('http://localhost:5000/playlists?' + params.toString());
+            if (response.status === 400) {
+                return 400;
+            } else if (response.status === 429) {
+                localStorage.setItem('retryAfterTime',
+                    DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
+                return 429;
+            } else if (!response.ok) {
+                const message = `An error occurred: ${response.statusText}`;
+                window.alert(message);
+                return false;
             }
-            catch (error) {
-                console.error(`Error in fetchUserPlaylists(): ${error}`);
-                return;
-            }
+            const playlists = await response.json();
+            return playlists;
         }
+        catch (error) {
+            console.error(`Error in fetchUserPlaylists(): ${error}`);
+            return;
+        }
+    }
 
+    function handleRefreshPlaylists() {
+        const params = new URLSearchParams({
+            userID: currentUser,
+            limit: loadPlaylistsLimit,
+            offset: 0,
+        });
+        setUserPlaylists([]);
+        fetchUserPlaylists(params)
+            .then((playlists) => {
+                if (playlists === 400) {
+                    navigate('/');
+                    setLoggedIn(false);
+                    setCurrentUser('');
+                    setCurrentPlaylist('');
+                    setTokenRevokedToastShowing(true);
+                    return;
+                } else if (playlists === 429) {
+                    setWaitingToRetry(true);
+                    handleRateLimitModalShow();
+                    return;
+                } else if (!playlists) {
+                    return
+                }
+                setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
+                setNextUserPlaylists(playlists.next);
+                console.log(playlists);
+            })
+            .catch((error) => {
+                console.error(`Error while calling handleRefreshPlaylists(): ${error}`);
+                return;
+            });
+    }
+
+    useEffect(() => {
         const params = new URLSearchParams({
             userID: currentUser,
             limit: loadPlaylistsLimit,
@@ -180,30 +214,30 @@ export default function NotesList(props) {
         }
     }, [currentUser, currentPlaylistsOffset, navigate]);
 
-    useEffect(() => {
-        async function fetchPlaylistTracks(params) {
-            try {
-                const response = await fetch('http://localhost:5000/tracks?' + params.toString());
-                if (response.status === 400) {
-                    return 400;
-                } else if (response.status === 429) {
-                    localStorage.setItem('retryAfterTime',
-                        DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
-                    return 429;
-                } else if (!response.ok) {
-                    const message = `An error occurred: ${response.statusText}`;
-                    window.alert(message);
-                    return false;
-                }
-                const playlistTracks = await response.json();
-                return playlistTracks;
+    async function fetchPlaylistTracks(params) {
+        try {
+            const response = await fetch('http://localhost:5000/tracks?' + params.toString());
+            if (response.status === 400) {
+                return 400;
+            } else if (response.status === 429) {
+                localStorage.setItem('retryAfterTime',
+                    DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
+                return 429;
+            } else if (!response.ok) {
+                const message = `An error occurred: ${response.statusText}`;
+                window.alert(message);
+                return false;
             }
-            catch (error) {
-                console.error(`Error in fetchPlaylistTracks(): ${error}`);
-                return;
-            }
+            const playlistTracks = await response.json();
+            return playlistTracks;
         }
+        catch (error) {
+            console.error(`Error in fetchPlaylistTracks(): ${error}`);
+            return;
+        }
+    }
 
+    useEffect(() => {
         async function fetchPlaylistObject(params) {
             try {
                 const response = await fetch('http://localhost:5000/playlist?' + params.toString());
@@ -550,6 +584,9 @@ export default function NotesList(props) {
                 isWaitingToRetry={isWaitingToRetry}
                 handleSelectClick={handleSelectClick}
             />
+            <RefreshPlaylistsButton
+                handleRefreshPlaylists={handleRefreshPlaylists}
+            />
             {currentPlaylistTracks.length > 0 && currentPlaylistObject && (
                 <>
                     <PlaylistCoverImage currentPlaylistObject={currentPlaylistObject} />
@@ -604,7 +641,7 @@ export default function NotesList(props) {
 
     return (
         <div>
-            {isLoggedIn && userPlaylists.length > 0 ? loggedInTemplate : loggedOutTemplate}
+            {isLoggedIn ? loggedInTemplate : loggedOutTemplate}
         </div>
     );
 }

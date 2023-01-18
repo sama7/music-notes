@@ -15,6 +15,11 @@ body {
   margin: 2em auto;
 }
 
+.refreshPlaylistsBtn {
+  margin-bottom: 1em;
+  text-align: left;
+}
+
 .form-group {
   margin-top: 2em;
   /* margin-right: 30%;
