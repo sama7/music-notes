@@ -11,13 +11,16 @@ body {
   color: white;
 }
 
-.loginBtn {
+.login-btn {
   margin: 2em auto;
 }
 
-.refreshPlaylistsBtn {
+.refresh-playlists-btn {
   margin-bottom: 1em;
-  text-align: left;
+}
+
+.refresh-tracks-btn {
+  margin: 1em auto;
 }
 
 .form-group {

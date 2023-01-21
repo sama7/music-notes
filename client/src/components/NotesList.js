@@ -11,12 +11,13 @@ import TokenRevokedToast from './TokenRevokedToast';
 import RateLimitModal from './RateLimitModal';
 import { DateTime } from 'luxon';
 import RefreshPlaylistsButton from './RefreshPlaylistsButton';
+import RefreshTracksButton from './RefreshTracksButton';
 
 export function usePrevious(value) {
     const ref = useRef();
     useEffect(() => {
         ref.current = value;
-    });
+    }, [value]);
     return ref.current;
 }
 
@@ -30,6 +31,7 @@ export default function NotesList(props) {
     const [nextUserPlaylists, setNextUserPlaylists] = useState('');
     const [currentPlaylist, setCurrentPlaylist] = useState('');
     const [currentPlaylistObject, setCurrentPlaylistObject] = useState({});
+    const [playlistsIncrement, setPlaylistsIncrement] = useState(0);
 
     const [currentPlaylistTracks, setCurrentPlaylistTracks] = useState([]);
     const loadTracksLimit = 100;
@@ -38,6 +40,7 @@ export default function NotesList(props) {
     const [currentTrack, setCurrentTrack] = useState('');
     const [currentTrackName, setCurrentTrackName] = useState('');
     const [currentTrackArtistsNames, setCurrentTrackArtistsNames] = useState([]);
+    const [tracksIncrement, setTracksIncrement] = useState(0);
 
     const [isAddNoteModalShowing, setAddNoteModalShowing] = useState(false);
     const [isEditNoteModalShowing, setEditNoteModalShowing] = useState(false);
@@ -147,36 +150,11 @@ export default function NotesList(props) {
     }
 
     function handleRefreshPlaylists() {
-        const params = new URLSearchParams({
-            userID: currentUser,
-            limit: loadPlaylistsLimit,
-            offset: 0,
-        });
-        setUserPlaylists([]);
-        fetchUserPlaylists(params)
-            .then((playlists) => {
-                if (playlists === 400) {
-                    navigate('/');
-                    setLoggedIn(false);
-                    setCurrentUser('');
-                    setCurrentPlaylist('');
-                    setTokenRevokedToastShowing(true);
-                    return;
-                } else if (playlists === 429) {
-                    setWaitingToRetry(true);
-                    handleRateLimitModalShow();
-                    return;
-                } else if (!playlists) {
-                    return
-                }
-                setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
-                setNextUserPlaylists(playlists.next);
-                console.log(playlists);
-            })
-            .catch((error) => {
-                console.error(`Error while calling handleRefreshPlaylists(): ${error}`);
-                return;
-            });
+        if (currentPlaylistsOffset !== 0) {
+            setCurrentPlaylistsOffset(0);
+        } else {
+            setPlaylistsIncrement(playlistsIncrement + 1);
+        }
     }
 
     useEffect(() => {
@@ -185,7 +163,6 @@ export default function NotesList(props) {
             limit: loadPlaylistsLimit,
             offset: currentPlaylistsOffset,
         });
-
         if (currentUser) {
             fetchUserPlaylists(params)
                 .then((playlists) => {
@@ -203,7 +180,11 @@ export default function NotesList(props) {
                     } else if (!playlists) {
                         return
                     }
-                    setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
+                    if (currentPlaylistsOffset === 0) {
+                        setUserPlaylists(playlists.items)
+                    } else {
+                        setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
+                    }
                     setNextUserPlaylists(playlists.next);
                     console.log(playlists);
                 })
@@ -212,7 +193,7 @@ export default function NotesList(props) {
                     return;
                 });
         }
-    }, [currentUser, currentPlaylistsOffset, navigate]);
+    }, [currentUser, currentPlaylistsOffset, playlistsIncrement, navigate]);
 
     async function fetchPlaylistTracks(params) {
         try {
@@ -234,6 +215,14 @@ export default function NotesList(props) {
         catch (error) {
             console.error(`Error in fetchPlaylistTracks(): ${error}`);
             return;
+        }
+    }
+
+    function handleRefreshTracks() {
+        if (currentTracksOffset !== 0) {
+            setCurrentTracksOffset(0);
+        } else {
+            setTracksIncrement(tracksIncrement + 1);
         }
     }
 
@@ -290,9 +279,13 @@ export default function NotesList(props) {
                     } else if (!playlistTracks) {
                         return;
                     }
-                    setCurrentPlaylistTracks(currentPlaylistTracks => (
-                        [...currentPlaylistTracks, ...playlistTracks.items]
-                    ));
+                    if (currentTracksOffset === 0) {
+                        setCurrentPlaylistTracks(playlistTracks.items);
+                    } else {
+                        setCurrentPlaylistTracks(currentPlaylistTracks => (
+                            [...currentPlaylistTracks, ...playlistTracks.items]
+                        ));
+                    }
                     setNextPlaylistTracks(playlistTracks.next);
                     console.log(playlistTracks);
                 })
@@ -326,7 +319,7 @@ export default function NotesList(props) {
                     });
             }
         }
-    }, [currentUser, currentPlaylist, currentTracksOffset, navigate]);
+    }, [currentUser, currentPlaylist, currentTracksOffset, tracksIncrement, navigate]);
 
     useEffect(() => {
         async function fetchNotes(params) {
@@ -590,6 +583,9 @@ export default function NotesList(props) {
             {currentPlaylistTracks.length > 0 && currentPlaylistObject && (
                 <>
                     <PlaylistCoverImage currentPlaylistObject={currentPlaylistObject} />
+                    <RefreshTracksButton
+                        handleRefreshTracks={handleRefreshTracks}
+                    />
                     <SongCollectionTable
                         currentPlaylist={currentPlaylist}
                         currentPlaylistTracks={currentPlaylistTracks}
