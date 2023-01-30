@@ -419,6 +419,10 @@ export default function NotesList(props) {
 
     async function handleAddNoteSubmit() {
         try {
+            if (!currentNote) {
+                alert('Note cannot be empty.');
+                return;
+            }
             const newNoteEntry = {
                 user: currentUser,
                 playlist: currentPlaylist,
@@ -454,6 +458,10 @@ export default function NotesList(props) {
 
     async function handleEditNoteSubmit() {
         try {
+            if (!currentNote) {
+                alert('Note cannot be empty.');
+                return;
+            }
             // there should only be one note with this combination
             const noteSearchCriteria = new URLSearchParams({
                 user: currentUser,
