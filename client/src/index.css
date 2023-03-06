@@ -15,18 +15,13 @@ body {
   margin: 2em auto;
 }
 
-.header {
-  display: flex;
-  justify-content: center;
-}
-
-.navbar {
+/* .navbar {
   margin: -20px;
 }
 
 .profile-pic {
   border-radius: 50%;
-}
+} */
 
 .refresh-playlists-btn {
   margin-bottom: 1em;

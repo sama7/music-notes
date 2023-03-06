@@ -3,6 +3,7 @@ const app = express();
 const cors = require('cors');
 require('dotenv').config({ path: './config.env' });
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const authorizeRouter = require('./routes/authorize');
 const noteRouter = require('./routes/note');
 const port = process.env.PORT || 5000;
@@ -14,6 +15,7 @@ app.use(cors({
     exposedHeaders: 'Retry-After',
 }));
 app.use(cookieParser());
+app.use(helmet());
 
 
 app.use('/', authorizeRouter);
