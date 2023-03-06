@@ -117,7 +117,7 @@ export default function NotesList(props) {
                         return
                     }
                     setCurrentUser(fetchedUser);
-                    console.log(fetchedUser);
+                    // console.log(fetchedUser);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchCurrentUser(): ${error}`);
@@ -186,7 +186,7 @@ export default function NotesList(props) {
                         setUserPlaylists(userPlaylists => [...userPlaylists, ...playlists.items]);
                     }
                     setNextUserPlaylists(playlists.next);
-                    console.log(playlists);
+                    // console.log(playlists);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchUserPlaylists(): ${error}`);
@@ -287,7 +287,7 @@ export default function NotesList(props) {
                         ));
                     }
                     setNextPlaylistTracks(playlistTracks.next);
-                    console.log(playlistTracks);
+                    // console.log(playlistTracks);
                 })
                 .catch((error) => {
                     console.error('Error while calling fetchPlaylistTracks():' + error);
@@ -311,7 +311,7 @@ export default function NotesList(props) {
                             return;
                         }
                         setCurrentPlaylistObject(playlistObject);
-                        console.log(playlistObject);
+                        // console.log(playlistObject);
                     })
                     .catch((error) => {
                         console.error('Error while calling fetchPlaylistObject():' + error);
@@ -348,7 +348,7 @@ export default function NotesList(props) {
             fetchNotes(params)
                 .then((notes) => {
                     setNotes(notes);
-                    console.log(notes);
+                    // console.log(notes);
                 })
                 .catch((error) => {
                     console.error(`Error while calling fetchNotes(): ${error}`);
