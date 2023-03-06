@@ -24,6 +24,10 @@ app.use('/note', noteRouter);
 // get driver connection
 const dbo = require('./db/conn');
 
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "client", "build", "index.html"));
+});
+
 app.listen(port, () => {
     // perform a database connection when server starts
     dbo.connectToServer(function (err) {
