@@ -13,7 +13,7 @@ const production = 'https://musicnotes.herokuapp.com';
 const development = 'http://localhost:3000';
 const base_url = (process.env.NODE_ENV ? production : development);
 
-app.use(express.json());
+app.use(express.static(path.join(__dirname, "client", "build")));
 app.use(cors({
     credentials: true,
     origin: base_url,
