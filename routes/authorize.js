@@ -4,7 +4,9 @@ const dbo = require('../db/conn');
 const spotifyWebApi = require('spotify-web-api-node');
 const { DateTime } = require('luxon');
 // const port = process.env.PORT || 5000;
-const clientPort = 3000;
+const production  = 'https://musicnotes.herokuapp.com';
+const development = 'http://localhost:3000';
+const base_url = (process.env.NODE_ENV ? production : development);
 
 /**
  * Generates a random string containing numbers and letters
@@ -28,7 +30,7 @@ const scopes = [
 const stateKey = 'spotify_auth_state';
 const client_id = '267de355b91648638b917d32faa7e23b'; // Your client id
 const client_secret = process.env.CLIENT_SECRET; // Your secret
-const redirect_uri = `http://localhost:${clientPort}/callback`; // Your redirect uri
+const redirect_uri = `${base_url}/callback`; // Your redirect uri
 const spotifyApi = new spotifyWebApi({
     redirectUri: redirect_uri,
     clientId: client_id,
@@ -158,7 +160,7 @@ router.route('/callback').get(function (req, res, next) {
         const params = new URLSearchParams({
             error: 'state_mismatch'
         });
-        res.redirect(`http://localhost:${clientPort}/#` + params.toString());
+        res.redirect(`${base_url}/#` + params.toString());
         return;
     }
     res.clearCookie(stateKey);
