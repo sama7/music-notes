@@ -23,8 +23,8 @@ app.use(cookieParser());
 app.use(helmet());
 
 app.use(compression());
-app.use('/', authorizeRouter);
-app.use('/note', noteRouter);
+app.use('/api/', authorizeRouter);
+app.use('/api/note', noteRouter);
 // get driver connection
 const dbo = require('./db/conn');
 

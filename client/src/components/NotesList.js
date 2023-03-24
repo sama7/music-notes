@@ -71,7 +71,7 @@ export default function NotesList(props) {
     useEffect(() => {
         async function fetchCurrentUser(params) {
             try {
-                const response = await fetch('/callback?' + params.toString(),
+                const response = await fetch('/api/callback?' + params.toString(),
                     { credentials: 'include' });
                 if (response.status === 400) {
                     return 400;
@@ -128,7 +128,7 @@ export default function NotesList(props) {
 
     async function fetchUserPlaylists(params) {
         try {
-            const response = await fetch('/playlists?' + params.toString());
+            const response = await fetch('/api/playlists?' + params.toString());
             if (response.status === 400) {
                 return 400;
             } else if (response.status === 429) {
@@ -197,7 +197,7 @@ export default function NotesList(props) {
 
     async function fetchPlaylistTracks(params) {
         try {
-            const response = await fetch('/tracks?' + params.toString());
+            const response = await fetch('/api/tracks?' + params.toString());
             if (response.status === 400) {
                 return 400;
             } else if (response.status === 429) {
@@ -229,7 +229,7 @@ export default function NotesList(props) {
     useEffect(() => {
         async function fetchPlaylistObject(params) {
             try {
-                const response = await fetch('/playlist?' + params.toString());
+                const response = await fetch('/api/playlist?' + params.toString());
                 if (response.status === 400) {
                     return 400;
                 } else if (response.status === 429) {
@@ -324,7 +324,7 @@ export default function NotesList(props) {
     useEffect(() => {
         async function fetchNotes(params) {
             try {
-                const response = await fetch('/note/?' + params.toString());
+                const response = await fetch('/api/note/?' + params.toString());
                 if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -429,7 +429,7 @@ export default function NotesList(props) {
                 track: currentTrack,
                 note: currentNote,
             };
-            await fetch('/note/add', {
+            await fetch('/api/note/add', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -471,7 +471,7 @@ export default function NotesList(props) {
             const editedNote = {
                 note: currentNote,
             };
-            await fetch('/note/update?' + noteSearchCriteria.toString(), {
+            await fetch('/api/note/update?' + noteSearchCriteria.toString(), {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -507,7 +507,7 @@ export default function NotesList(props) {
                 playlist: currentPlaylist,
                 track: currentTrack,
             });
-            await fetch('/note/delete?' + noteSearchCriteria.toString(), {
+            await fetch('/api/note/delete?' + noteSearchCriteria.toString(), {
                 method: 'DELETE',
             });
             handleDeleteNoteModalClose();
