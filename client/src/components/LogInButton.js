@@ -6,7 +6,7 @@ export default function LogInButton(props) {
         if (process.env.REACT_APP_ENV === 'production') {
             return (
                 <a
-                    href={`${production}/login`}
+                    href={`${production}/api/login`}
                     className="btn btn-primary login-btn"
                 >
                     Log in
@@ -16,7 +16,7 @@ export default function LogInButton(props) {
         // otherwise, we're in dev
         return (
             <a
-                href={`${development}/login`}
+                href={`${development}/api/login`}
                 className="btn btn-primary login-btn"
             >
                 Log in
