@@ -92,6 +92,7 @@ export default function SongCollectionRows(props) {
                                     }
                                     width="50"
                                     height="50"
+                                    crossOrigin="anonymous"
                                 />
                                 :
                                 <img
@@ -108,6 +109,7 @@ export default function SongCollectionRows(props) {
                                     }
                                     width="50"
                                     height="50"
+                                    crossOrigin="anonmymous"
                                 />
                             }
                         </td>
