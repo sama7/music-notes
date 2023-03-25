@@ -8,6 +8,7 @@ export default function PlaylistCoverImage(props) {
                     className="playlist-cover"
                     src={props.currentPlaylistObject.images[0].url}
                     alt={`Cover for Playlist "${props.currentPlaylistObject.name}"`}
+                    crossOrigin="anonymous"
                 />
             );
         } else {
@@ -16,6 +17,7 @@ export default function PlaylistCoverImage(props) {
                     className="playlist-cover"
                     src={playlistCoverMissing}
                     alt={`Cover for Playlist "${props.currentPlaylistObject.name}" (placeholder art)`}
+                    crossOrigin="anonymous"
                 />
             );
         }
