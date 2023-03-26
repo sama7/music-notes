@@ -1,7 +1,30 @@
-export default function Header() {
+export default function Header(props) {
+    const production = 'https://musicnotes.herokuapp.com';
+    const development = 'http://localhost:3000';
+
+    function HeaderLink(props) {
+        if (process.env.REACT_APP_ENV === 'production') {
+            return (
+                <h1>
+                    <a href={production} className="link-light header-link">
+                        Music Notes
+                    </a>
+                </h1>
+            );
+        }
+        // otherwise, we're in dev
+        return (
+            <h1>
+                <a href={development} className="link-light header-link">
+                    Music Notes
+                </a>
+            </h1>
+        );
+    }
+
     return (
         <div>
-            <h1>Music Notes</h1>
+            <HeaderLink />
             <h6>Keep track of music memories.</h6>
         </div>
     );
