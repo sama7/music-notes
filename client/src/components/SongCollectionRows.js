@@ -56,13 +56,19 @@ export default function SongCollectionRows(props) {
     }
 
     function NotesRow(props) {
+        function unescape(string) {
+            return new DOMParser().parseFromString(string, 'text/html').querySelector('html').textContent;
+        }
+
         for (let i = 0; i < props.notes.length; i++) {
             // if we find a note that corresponds to this track, render the note in a row below the track
             if (props.notes[i].track === props.item.track.uri) {
                 return (
                     <tr>
                         <th scope="row"></th>
-                        <td className="note border border-2 border-white border-opacity-25" colSpan="5">{props.notes[i].note}</td>
+                        <td className="note border border-2 border-white border-opacity-25" colSpan="5">
+                            {unescape(props.notes[i].note)}
+                        </td>
                     </tr>
                 );
             }
