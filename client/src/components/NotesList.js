@@ -224,6 +224,7 @@ export default function NotesList(props) {
         } else {
             setTracksIncrement(tracksIncrement + 1);
         }
+        setNotesIncrement(notesIncrement + 1);
     }
 
     useEffect(() => {
