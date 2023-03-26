@@ -11,6 +11,10 @@ body {
   color: white;
 }
 
+.header-link {
+  text-decoration: none;
+}
+
 .login-btn {
   margin: 2em auto;
 }
