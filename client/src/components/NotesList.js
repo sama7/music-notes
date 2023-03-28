@@ -645,7 +645,7 @@ export default function NotesList(props) {
     );
 
     return (
-        <div>
+        <div className="flex-fill">
             {isLoggedIn ? loggedInTemplate : loggedOutTemplate}
         </div>
     );

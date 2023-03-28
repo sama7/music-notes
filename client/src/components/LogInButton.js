@@ -9,7 +9,7 @@ export default function LogInButton(props) {
                     href={`${production}/api/login`}
                     className="btn btn-primary login-btn"
                 >
-                    Log in
+                    Log in with Spotify
                 </a>
             );
         }
@@ -19,7 +19,7 @@ export default function LogInButton(props) {
                 href={`${development}/api/login`}
                 className="btn btn-primary login-btn"
             >
-                Log in
+                Log in with Spotify
             </a>
         );
     }

@@ -23,10 +23,10 @@ export default function Header(props) {
     }
 
     return (
-        <div>
+        <header>
             <HeaderLink />
             <h6>Keep track of music memories.</h6>
-        </div>
+        </header>
     );
 }
         // <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
