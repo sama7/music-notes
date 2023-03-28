@@ -5,10 +5,13 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding: 20px;
   text-align: center;
   background-color: rgb(25, 25, 25);
   color: white;
+}
+
+header {
+  padding-top: 20px;
 }
 
 .header-link {
@@ -106,6 +109,14 @@ table .delete-note {
 
 #noBtn {
   margin-right: 2%;
+}
+
+footer {
+  margin-top: 50px;
+}
+
+.github-btn {
+  margin: 3px;
 }
 
 code {
