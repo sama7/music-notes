@@ -1,6 +1,6 @@
 export default function LogInButton(props) {
     const production = 'https://musicnotes.herokuapp.com';
-    const development = 'http://localhost:5000';
+    const development = `http://localhost:${process.env.REACT_APP_DEV_SERVER_PORT}`;
 
     function Button(props) {
         if (process.env.REACT_APP_ENV === 'production') {

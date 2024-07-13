@@ -39,10 +39,15 @@ http://localhost:3000/callback
 ```
 DEV_MONGODB_URI=[ENTER CONNECTION STRING FROM STEP 9]
 DEV_DB_NAME=[ENTER DATABASE NAME FROM STEP 9]
-PORT=5000
+PORT=4000
 CLIENT_SECRET=[ENTER CLIENT SECRET FROM STEP 7]
 ```
 12. In `/routes/authorize.js`, update the value of the `client_id` constant to your Client ID from Step 7.
+13. Create a `.env` file in the `client` directory of the project. Populate it with the below contents:
+```
+REACT_APP_ENV=development
+REACT_APP_DEV_SERVER_PORT=4000
+```
 
 ## Running the Local App
 1. Navigate to the project directory in the command line and run the below command to start the server:
