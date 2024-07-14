@@ -1,5 +1,5 @@
 export default function LogInButton(props) {
-    const production = 'https://musicnotes.herokuapp.com';
+    const production = 'https://www.playlistnotes.io';
     const development = `http://localhost:${process.env.REACT_APP_DEV_SERVER_PORT}`;
 
     function Button(props) {

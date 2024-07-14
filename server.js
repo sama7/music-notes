@@ -9,7 +9,7 @@ const authorizeRouter = require('./routes/authorize');
 const noteRouter = require('./routes/note');
 const compression = require('compression');
 const port = process.env.PORT || 4000;
-const production = 'https://musicnotes.herokuapp.com';
+const production = 'https://www.playlistnotes.io';
 const development = 'http://localhost:3000';
 const base_url = (process.env.NODE_ENV ? production : development);
 

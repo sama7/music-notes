@@ -12,7 +12,7 @@ export default function TokenRevokedToast(props) {
                 autohide
             >
                 <Toast.Header closeButton={false}>
-                    <strong className="me-auto">Music Notes</strong>
+                    <strong className="me-auto">Playlist Notes</strong>
                 </Toast.Header>
                 <Toast.Body>Refresh token has expired or been revoked. Please log in again.</Toast.Body>
             </Toast>

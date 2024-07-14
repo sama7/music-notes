@@ -1,5 +1,5 @@
 export default function Header(props) {
-    const production = 'https://musicnotes.herokuapp.com';
+    const production = 'https://www.playlistnotes.io';
     const development = 'http://localhost:3000';
 
     function HeaderLink(props) {
@@ -7,7 +7,7 @@ export default function Header(props) {
             return (
                 <h1>
                     <a href={production} className="link-light header-link">
-                        Music Notes
+                        Playlist Notes
                     </a>
                 </h1>
             );
@@ -16,7 +16,7 @@ export default function Header(props) {
         return (
             <h1>
                 <a href={development} className="link-light header-link">
-                    Music Notes
+                    Playlist Notes
                 </a>
             </h1>
         );
@@ -32,7 +32,7 @@ export default function Header(props) {
         // <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
         //     <div className="container-fluid">
         //         <div className="navbar-brand me-auto">
-        //             Music Notes
+        //             Playlist Notes
         //         </div>
         //         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         //             <span className="navbar-toggler-icon"></span>

@@ -1,18 +1,18 @@
-# music-notes
+# playlist-notes
 
-Music Notes was created to capture notes connected to your favorite songs. Whether it’s a random detail in a track, some interesting trivia, or memories with loved ones, you can capture and save it all with Music Notes.
+Playlist Notes was created to capture notes connected to your favorite songs. Whether it’s a random detail in a track, some interesting trivia, or memories with loved ones, you can capture and save it all with Playlist Notes.
 
-To use Music Notes, log in securely to your Spotify account via the button on the homepage. You will then be able to select any of your saved playlists. Once a playlist is selected, you can add, edit, or delete your notes.
+To use Playlist Notes, log in securely to your Spotify account via the button on the homepage. You will then be able to select any of your saved playlists. Once a playlist is selected, you can add, edit, or delete your notes.
 
 ## Screenshots
 
-![Screenshot of Music Notes homepage](https://i.imgur.com/TrNWrce.png)
+![Screenshot of Playlist Notes homepage](https://i.imgur.com/eUftzU7.png)
 
-![Screenshot of list of user's playlists](https://i.imgur.com/AwlDzjs.png)
+![Screenshot of list of user's playlists](https://i.imgur.com/OMIsGAt.png)
 
-![Screenshot of notes for Christmas playlist](https://i.imgur.com/bY7ChY1.png)
+![Screenshot of notes for Perfect Days soundtrack playlist](https://i.imgur.com/lhgqaX6.png)
 
-A live version of the website is available at https://musicnotes.herokuapp.com/. However, since the app is in ["Development Mode"](https://developer.spotify.com/documentation/web-api/concepts/quota-modes), new users need to be manually onboarded. You can follow the below instructions to create a clone of this app so you can run the site locally.
+A live version of the website is available at https://playlistnotes.io. However, since the app is in ["Development Mode"](https://developer.spotify.com/documentation/web-api/concepts/quota-modes), new users need to be manually onboarded. You can follow the below instructions to create a clone of this app so you can run the site locally.
 
 ## Local Installation
 
