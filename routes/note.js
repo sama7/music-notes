@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
+const { DateTime } = require('luxon');
 
 // This will help us connect to the database
 const dbo = require('../db/conn');
@@ -51,6 +52,8 @@ router.route('/add').post([
             playlist: req.body.playlist,
             track: req.body.track,
             note: req.body.note,
+            timeCreated: DateTime.now(),
+            timeModified: DateTime.now(),
         };
         db_connect.collection("notes").insertOne(myobj, function (err, res) {
             if (err) throw err;
@@ -90,6 +93,7 @@ router.route('/update').post([
         const newvalues = {
             $set: {
                 note: req.body.note,
+                timeModified: DateTime.now(),
             },
         };
         db_connect
