@@ -1,14 +1,14 @@
-# playlist-notes
+# Playlistnotes
 
-Playlist Notes was created to capture notes connected to your favorite songs. Whether it’s a random detail in a track, some interesting trivia, or memories with loved ones, you can capture and save it all with Playlist Notes.
+Playlistnotes was created to capture notes connected to your favorite songs. Whether it’s a random detail in a track, some interesting trivia, or memories with loved ones, you can capture and save it all with Playlistnotes.
 
-To use Playlist Notes, log in securely to your Spotify account via the button on the homepage. You will then be able to select any of your saved playlists. Once a playlist is selected, you can add, edit, or delete your notes.
+To use Playlistnotes, log in securely to your Spotify account via the button on the homepage. You will then be able to select any of your saved playlists. Once a playlist is selected, you can add, edit, or delete your notes.
 
 ## Screenshots
 
-![Screenshot of Playlist Notes homepage](https://i.imgur.com/eUftzU7.png)
+![Screenshot of Playlistnotes homepage](https://i.imgur.com/RgGBbDP.png)
 
-![Screenshot of list of user's playlists](https://i.imgur.com/OMIsGAt.png)
+![Screenshot of list of user's playlists](https://i.imgur.com/SjfSTAk.png)
 
 ![Screenshot of notes for Perfect Days soundtrack playlist](https://i.imgur.com/lhgqaX6.png)
 
