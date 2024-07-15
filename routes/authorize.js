@@ -4,7 +4,7 @@ const dbo = require('../db/conn');
 const spotifyWebApi = require('spotify-web-api-node');
 const { DateTime } = require('luxon');
 // const port = process.env.PORT || 4000;
-const production  = 'https://www.playlistnotes.io';
+const production = 'https://www.playlistnotes.io';
 const development = 'http://localhost:3000';
 const base_url = (process.env.NODE_ENV ? production : development);
 
@@ -209,6 +209,9 @@ router.route('/callback').get(function (req, res, next) {
             res.json(userID);
         })
         .catch(error => {
+            if (error.statusCode === 403) {
+                res.status(403).json({});
+            }
             console.error('Error:', error);
             next(error);
         });

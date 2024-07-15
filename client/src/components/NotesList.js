@@ -79,6 +79,10 @@ export default function NotesList(props) {
                     localStorage.setItem('retryAfterTime',
                         DateTime.now().plus({ seconds: response.headers.get('retry-after') }).toSeconds());
                     return 429;
+                } else if (response.status === 403) {
+                    const message = "Error: Playlistnotes is currently invite-only and you haven’t been onboarded yet. Please DM @Playlistnotes on X (formerly Twitter) or email samah@playlistnotes.io to request entry.";
+                    window.alert(message);
+                    return 403;
                 } else if (!response.ok) {
                     const message = `An error occurred: ${response.statusText}`;
                     window.alert(message);
@@ -112,6 +116,12 @@ export default function NotesList(props) {
                     } else if (fetchedUser === 429) {
                         setWaitingToRetry(true);
                         handleRateLimitModalShow();
+                        return;
+                    } else if (fetchedUser === 403) {
+                        navigate('/');
+                        setLoggedIn(false);
+                        setCurrentUser('');
+                        setCurrentPlaylist('');
                         return;
                     } else if (!fetchedUser) {
                         return
